@@ -1,26 +1,15 @@
 // HomePage.jsx
 import { useState, useEffect, useRef } from 'react'
-
+import Balanced from '@/assets/balanced.svg'
+import User from '@/assets/user.svg'
+import Search from '@/assets/search.svg'
+import Verified from '@/assets/verified.svg'
 export default function HomePage() {
   const [hoveredFeature, setHoveredFeature] = useState(null)
   const [animatedStats, setAnimatedStats] = useState({ drivers: 0, owners: 0, passengers: 0 })
   const statsRef = useRef(null)
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          animateStats()
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.3 }
-    )
-    if (statsRef.current) observer.observe(statsRef.current)
-    return () => observer.disconnect()
-  }, [])
-
-  const animateStats = () => {
+  function animateStats() {
     const targets = { drivers: 87, owners: 76, passengers: 91 }
     const duration = 1500
     const steps = 60
@@ -42,6 +31,20 @@ export default function HomePage() {
       if (step >= steps) clearInterval(timer)
     }, duration / steps)
   }
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          animateStats()
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    if (statsRef.current) observer.observe(statsRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div> 
@@ -148,9 +151,11 @@ export default function HomePage() {
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
                     hoveredFeature === idx ? 'bg-gradient-to-br from-[#2563EB] to-[#7C3AED] shadow-lg scale-110' : 'bg-[#EFF6FF]'
                   }`}>
-                    <span className={`text-2xl transition-all duration-300 ${hoveredFeature === idx ? 'text-white scale-110' : ''}`}>
-                      {feature.icon}
-                    </span>
+                    <img
+                      src={feature.icon}
+                      alt={feature.title}
+                      className={`w-7 h-7 transition-all duration-300 ${hoveredFeature === idx ? 'brightness-0 invert scale-110' : ''}`}
+                    />
                   </div>
                   <h3 className="font-bold text-[#111827] text-lg mb-2">{feature.title}</h3>
                   <p className="text-[#6B7280] text-sm leading-relaxed">{feature.description}</p>
@@ -224,7 +229,7 @@ export default function HomePage() {
                 className="group text-center p-6 bg-white rounded-2xl border border-[#E5E7EB] hover:border-[#2563EB]/30 hover:shadow-xl transition-all duration-300"
               >
                 <div className="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-[#EFF6FF] to-[#F0F5FF] rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
-                  {principle.icon}
+                  <img src={principle.icon} alt={principle.title} className="w-10 h-10" />
                 </div>
                 <h3 className="text-xl font-bold text-[#111827] mb-2">{principle.title}</h3>
                 <p className="text-[#6B7280] text-sm leading-relaxed">{principle.description}</p>
@@ -405,10 +410,10 @@ export default function HomePage() {
 
 // Data arrays
 const features = [
-  { icon: '⭐', title: 'Driver Ratings', description: 'View aggregated ratings & verified history across all platforms you\'ve driven for.' },
-  { icon: '🏢', title: 'Owner Feedback', description: 'Rate car owners on payment timeliness, vehicle condition, and overall fairness.' },
-  { icon: '🛡️', title: 'Area Safety', description: 'Check destination safety via driver-reported heatmaps and real-time alerts.' },
-  { icon: '🤖', title: 'AI Insights', description: 'Get smart summaries, reputation reports, and predictive reliability scores.' },
+  { icon: Verified, title: 'Driver Ratings', description: 'View aggregated ratings & verified history across all platforms you\'ve driven for.' },
+  { icon: User, title: 'Owner Feedback', description: 'Rate car owners on payment timeliness, vehicle condition, and overall fairness.' },
+  { icon: Search, title: 'Area Safety', description: 'Check destination safety via driver-reported heatmaps and real-time alerts.' },
+  { icon: Balanced, title: 'AI Insights', description: 'Get smart summaries, reputation reports, and predictive reliability scores.' },
 ]
 
 const steps = [
@@ -419,10 +424,10 @@ const steps = [
 ]
 
 const principles = [
-  { icon: '⚖️', title: 'Neutral', description: 'No booking, no payments, no trip matching — just pure reputation intelligence.' },
-  { icon: '👤', title: 'User Ownership', description: 'All data belongs to the user who submitted it. You control your information.' },
-  { icon: '✅', title: 'Verification by Consent', description: 'No scraping. Users voluntarily upload their data with explicit consent.' },
-  { icon: '🔍', title: 'Transparency', description: 'All AI summaries are clearly marked as generated. No black boxes.' },
+  { icon: Balanced, title: 'Neutral', description: 'No booking, no payments, no trip matching — just pure reputation intelligence.' },
+  { icon: User, title: 'User Ownership', description: 'All data belongs to the user who submitted it. You control your information.' },
+  { icon: Verified, title: 'Verification by Consent', description: 'No scraping. Users voluntarily upload their data with explicit consent.' },
+  { icon: Search, title: 'Transparency', description: 'All AI summaries are clearly marked as generated. No black boxes.' },
 ]
 
 const testimonials = [
