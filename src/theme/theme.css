@@ -1,0 +1,86 @@
+/**
+ * TrustDrive Theme CSS Variables
+ * Light and Dark Theme Configuration
+ * Design System Reference: scope.html - Section 20
+ */
+
+/* Light Theme (Default) */
+:root {
+  /* Primary Colors */
+  --color-primary-main: #2563EB;
+  --color-primary-dark: #1E40AF;
+  --color-accent-purple: #7C3AED;
+
+  /* Backgrounds */
+  --color-bg-main: #F9FAFB;
+  --color-bg-card: #FFFFFF;
+  --color-bg-border: #E5E7EB;
+
+  /* Text */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+
+  /* Status */
+  --color-status-success: #10B981;
+  --color-status-warning: #F59E0B;
+  --color-status-danger: #EF4444;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  /* Primary Colors */
+  --color-primary-main: #3B82F6;
+  --color-primary-dark: #1E40AF;
+  --color-accent-purple: #8B5CF6;
+
+  /* Backgrounds */
+  --color-bg-main: #0B1220;
+  --color-bg-card: #111827;
+  --color-bg-border: #1F2937;
+
+  /* Text */
+  --color-text-primary: #F9FAFB;
+  --color-text-secondary: #9CA3AF;
+
+  /* Status */
+  --color-status-success: #34D399;
+  --color-status-warning: #FBBF24;
+  --color-status-danger: #F87171;
+}
+
+/* Apply theme to body */
+body {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Common Elements */
+button, a {
+  color: var(--color-primary-main);
+}
+
+button:hover, a:hover {
+  color: var(--color-primary-dark);
+}
+
+.card {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-bg-border);
+}
+
+.status-success {
+  color: var(--color-status-success);
+}
+
+.status-warning {
+  color: var(--color-status-warning);
+}
+
+.status-danger {
+  color: var(--color-status-danger);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
