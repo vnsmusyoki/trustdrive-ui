@@ -182,21 +182,20 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8">
-            {steps.map((step, idx) => (
-              <div key={idx} className="relative">
-                {idx < 3 && (
-                  <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-[#2563EB] to-[#7C3AED] -translate-x-8 z-0"></div>
-                )}
-                <div className="relative z-10 text-center">
+          <div className="relative">
+            <div className="hidden md:block absolute left-[12.5%] right-[12.5%] top-8 h-0.5 bg-gradient-to-r from-[#2563EB] to-[#7C3AED] z-0"></div>
+
+            <div className="grid md:grid-cols-4 gap-8 relative z-10">
+              {steps.map((step, idx) => (
+                <div key={idx} className="text-center">
                   <div className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-[#2563EB] to-[#7C3AED] text-white rounded-2xl flex items-center justify-center text-2xl font-bold shadow-lg">
                     {idx + 1}
                   </div>
                   <h3 className="font-bold text-[#111827] text-lg mb-2">{step.title}</h3>
                   <p className="text-sm text-[#6B7280]">{step.description}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Demo button */}
