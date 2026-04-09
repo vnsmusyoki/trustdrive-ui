@@ -1,318 +1,708 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useTheme } from '@/hooks/useTheme'
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
+import * as Icons from 'lucide-react';
 
-const roleLabels = {
-  driver: 'Driver',
-  owner: 'Owner',
-  platform: 'Platform',
-  super_admin: 'Super Admin',
-}
-
-const roleNavigation = {
+// -----------------------------------------------------------------------------
+// Role-based menu configuration (fully scoped to DriveTrust proposal)
+// -----------------------------------------------------------------------------
+const roleMenus = {
   driver: [
-    { label: 'Home', to: '/home' },
-    { label: 'Trip Activity', to: '/home?section=trips' },
-    { label: 'Documents', to: '/home?section=documents' },
+    {
+      id: 'main',
+      category: 'Main',
+      icon: 'LayoutDashboard',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+      ],
+    },
+    {
+      id: 'reputation',
+      category: 'Reputation & History',
+      icon: 'Shield',
+      items: [
+        { id: 'verified-history', label: 'Verified History', icon: 'BadgeCheck', path: '/home?section=verified-history' },
+        { id: 'reputation-passport', label: 'Reputation Passport (PDF)', icon: 'FileText', path: '/home?section=reputation-passport' },
+        { id: 'my-ratings', label: 'My Ratings & Reviews', icon: 'Star', path: '/home?section=my-ratings' },
+        { id: 'upload-csv', label: 'Upload Uber/Bolt CSV', icon: 'Upload', path: '/home?section=upload-csv' },
+      ],
+    },
+    {
+      id: 'feedback',
+      category: 'Feedback & Safety',
+      icon: 'MessageSquare',
+      items: [
+        { id: 'rate-owners', label: 'Rate Car Owners', icon: 'Building2', path: '/home?section=rate-owners' },
+        { id: 'area-safety', label: 'Submit Area Safety Review', icon: 'MapPin', path: '/home?section=area-safety' },
+      ],
+    },
+    {
+      id: 'financial',
+      category: 'Financial',
+      icon: 'Wallet',
+      items: [
+        { id: 'earnings', label: 'Earnings Overview', icon: 'DollarSign', path: '/home?section=earnings' },
+        { id: 'documents', label: 'Documents', icon: 'Folder', path: '/home?section=documents' },
+      ],
+    },
   ],
+
   owner: [
-    { label: 'Home', to: '/home' },
-    { label: 'Fleet', to: '/home?section=fleet' },
-    { label: 'Payouts', to: '/home?section=payouts' },
+    {
+      id: 'main',
+      category: 'Main',
+      icon: 'LayoutDashboard',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+      ],
+    },
+    {
+      id: 'driver-management',
+      category: 'Driver Management',
+      icon: 'Users',
+      items: [
+        { id: 'search-drivers', label: 'Search Drivers', icon: 'Search', path: '/home?section=search-drivers' },
+        { id: 'ai-hiring', label: 'AI Hiring Assistant', icon: 'Brain', path: '/home?section=ai-hiring', badge: 'AI', badgeColor: 'purple' },
+        { id: 'bulk-search', label: 'Bulk Driver Search', icon: 'Database', path: '/home?section=bulk-search' },
+        { id: 'driver-requests', label: 'Driver Requests', icon: 'UserCheck', path: '/home?section=requests' },
+      ],
+    },
+    {
+      id: 'fleet',
+      category: 'Fleet & Operations',
+      icon: 'Truck',
+      items: [
+        { id: 'my-fleet', label: 'My Fleet', icon: 'Car', path: '/home?section=fleet' },
+        { id: 'claims', label: 'Claims & Deposits', icon: 'FileWarning', path: '/home?section=claims' },
+        { id: 'payouts', label: 'Payouts', icon: 'CreditCard', path: '/home?section=payouts' },
+      ],
+    },
+    {
+      id: 'reviews',
+      category: 'Reviews',
+      icon: 'MessageCircle',
+      items: [
+        { id: 'respond-reviews', label: 'Respond to Reviews', icon: 'Reply', path: '/home?section=respond-reviews' },
+      ],
+    },
   ],
+
+  passenger: [
+    {
+      id: 'main',
+      category: 'Main',
+      icon: 'LayoutDashboard',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+      ],
+    },
+    {
+      id: 'safety',
+      category: 'Safety Tools',
+      icon: 'ShieldAlert',
+      items: [
+        { id: 'plate-lookup', label: 'License Plate Lookup', icon: 'Search', path: '/home?section=plate-lookup' },
+        { id: 'safety-score', label: 'Driver Safety Score', icon: 'Gauge', path: '/home?section=safety-score' },
+        { id: 'area-map', label: 'Area Safety Map', icon: 'Map', path: '/home?section=area-map' },
+        { id: 'safety-alerts', label: 'Real-Time Safety Alerts', icon: 'BellRing', path: '/home?section=safety-alerts' },
+      ],
+    },
+    {
+      id: 'trips',
+      category: 'Trips',
+      icon: 'Navigation',
+      items: [
+        { id: 'post-review', label: 'Post-Trip Review', icon: 'Edit3', path: '/home?section=post-review' },
+        { id: 'trip-history', label: 'My Trip History', icon: 'Clock', path: '/home?section=trip-history' },
+      ],
+    },
+  ],
+
   platform: [
-    { label: 'Home', to: '/home' },
-    { label: 'Partners', to: '/home?section=partners' },
-    { label: 'Moderation', to: '/home?section=moderation' },
+    {
+      id: 'main',
+      category: 'Main',
+      icon: 'LayoutDashboard',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+      ],
+    },
+    {
+      id: 'partnership',
+      category: 'Partnership',
+      icon: 'Handshake',
+      items: [
+        { id: 'partners', label: 'Partner Analytics', icon: 'BarChart3', path: '/home?section=partners' },
+        { id: 'insights', label: 'Fleet Insights', icon: 'TrendingUp', path: '/home?section=insights' },
+        { id: 'data-export', label: 'Bulk Data Export', icon: 'Download', path: '/home?section=data-export' },
+      ],
+    },
+    {
+      id: 'governance',
+      category: 'Governance',
+      icon: 'Gavel',
+      items: [
+        { id: 'moderation', label: 'Review Moderation', icon: 'Flag', path: '/home?section=moderation' },
+        { id: 'disputes', label: 'Dispute Resolution', icon: 'Scale', path: '/home?section=disputes' },
+        { id: 'api-health', label: 'API Health & Usage', icon: 'Activity', path: '/home?section=api-health' },
+      ],
+    },
   ],
+
   super_admin: [
-    { label: 'Home', to: '/home' },
-    { label: 'User Governance', to: '/home?section=governance' },
-    { label: 'System Audit', to: '/home?section=audit' },
-    { label: 'Platform Settings', to: '/home?section=settings' },
+    {
+      id: 'main',
+      category: 'Main',
+      icon: 'LayoutDashboard',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+      ],
+    },
+    {
+      id: 'governance',
+      category: 'User Governance',
+      icon: 'Shield',
+      items: [
+        { id: 'governance', label: 'User Governance', icon: 'Users', path: '/home?section=governance' },
+        { id: 'user-management', label: 'All Users & Roles', icon: 'UserCog', path: '/home?section=user-management' },
+        { id: 'compliance', label: 'Compliance (DPA/GDPR)', icon: 'FileCheck', path: '/home?section=compliance' },
+      ],
+    },
+    {
+      id: 'system',
+      category: 'System Administration',
+      icon: 'Server',
+      items: [
+        { id: 'audit', label: 'System Audit Log', icon: 'FileSearch', path: '/home?section=audit' },
+        { id: 'settings', label: 'Platform Settings', icon: 'Settings', path: '/home?section=settings' },
+        { id: 'security', label: 'Security Center', icon: 'Lock', path: '/home?section=security' },
+        { id: 'rate-limits', label: 'Rate Limits & Throttling', icon: 'Gauge', path: '/home?section=rate-limits' },
+        { id: 'ai-models', label: 'AI Model Management', icon: 'Brain', path: '/home?section=ai-models' },
+      ],
+    },
   ],
-}
+};
 
-function readAuthUser() {
-  try {
-    const raw = localStorage.getItem('trustdrive-auth-user')
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object') return null
-    return parsed
-  } catch {
-    return null
+// Role labels for display
+const roleLabels = {
+  driver: 'Driver Portal',
+  owner: 'Owner Portal',
+  passenger: 'Passenger Portal',
+  platform: 'Platform Partner',
+  super_admin: 'Super Admin',
+};
+
+// Theme management
+const THEME_STORAGE_KEY = 'trustdrive-theme';
+const VALID_THEMES = ['light', 'dark', 'system'];
+
+const resolveTheme = (pref) => {
+  if (pref === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
-}
+  return pref;
+};
 
-function iconPathFor(label) {
-  if (/home/i.test(label)) return 'M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10'
-  if (/trip|activity|audit/i.test(label)) return 'M9 17v-6m3 6V7m3 10v-3m5 8H4a1 1 0 01-1-1V4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1z'
-  if (/fleet|partner|governance|settings/i.test(label)) return 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.065 2.573c.94 1.543-.827 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.572-1.065c-1.543.94-3.31-.827-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.572c-.94-1.544.826-3.31 2.37-2.37.996.607 2.296.07 2.572-1.066zM12 15a3 3 0 100-6 3 3 0 000 6z'
-  if (/document|payout|moderation/i.test(label)) return 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-  return 'M12 6v6l4 2'
-}
+const applyThemeToDOM = (pref) => {
+  const resolved = resolveTheme(pref);
+  document.documentElement.classList.toggle('dark', resolved === 'dark');
+  document.documentElement.setAttribute('data-theme', resolved);
+};
 
-function parseTo(to) {
-  const [pathname, query = ''] = to.split('?')
-  return {
-    pathname,
-    search: query ? `?${query}` : '',
-  }
-}
+const getStoredThemePreference = () => {
+  if (typeof window === 'undefined') return 'light';
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  return VALID_THEMES.includes(stored) ? stored : 'light';
+};
 
-function isLinkActive(to, location) {
-  const target = parseTo(to)
-  if (location.pathname !== target.pathname) return false
+// Dynamic icon component
+const DynamicIcon = ({ name, size = 20, className = '' }) => {
+  const IconComponent = Icons[name];
+  if (!IconComponent) return <Icons.HelpCircle size={size} className={className} />;
+  return <IconComponent size={size} className={className} />;
+};
 
-  if (!target.search) {
-    return location.search === ''
-  }
+// Helper to check if a path is active
+const isPathActive = (path, currentPath, currentSearch) => {
+  if (!path) return false;
+  const [pathname, search] = path.split('?');
+  if (currentPath !== pathname) return false;
+  if (!search) return currentSearch === '';
+  return currentSearch === `?${search}`;
+};
 
-  return location.search === target.search
-}
+// Recursive menu item renderer
+const MenuItemRenderer = ({ item, currentPath, currentSearch, level = 0, collapsed, onNavigate }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+  const isActive = isPathActive(item.path, currentPath, currentSearch);
+  const childIsActive = hasChildren && !collapsed && (item.children?.some(
+    (child) => isPathActive(child.path, currentPath, currentSearch)
+  ) ?? false);
+  const isExpanded = isOpen || childIsActive;
 
-export default function AppLayout() {
-  const location = useLocation()
-  const { theme, toggleTheme } = useTheme()
-
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [role, setRole] = useState(localStorage.getItem('trustdrive-user-role') || '')
-  const [authUser, setAuthUser] = useState(readAuthUser())
-
-  useEffect(() => {
-    const syncSession = () => {
-      setRole(localStorage.getItem('trustdrive-user-role') || '')
-      setAuthUser(readAuthUser())
-    }
-
-    window.addEventListener('storage', syncSession)
-    syncSession()
-
-    return () => window.removeEventListener('storage', syncSession)
-  }, [])
-
-  const navItems = useMemo(() => {
-    if (Array.isArray(authUser?.links) && authUser.links.length > 0) {
-      return authUser.links
-    }
-    return roleNavigation[role] || [{ label: 'Home', to: '/home' }]
-  }, [authUser, role])
-
-  const activeItemLabel = useMemo(() => {
-    const current = navItems.find((item) => isLinkActive(item.to, location))
-    return current?.label || 'Workspace'
-  }, [location, navItems])
-
-  const today = useMemo(
-    () => new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date()),
-    []
-  )
-
-  if (!role || !roleLabels[role]) {
-    return <Navigate to="/login" replace />
+  if (collapsed) {
+    // Collapsed view - show icon only with tooltip on hover
+    return (
+      <div className="relative group">
+        {item.path ? (
+          <button
+            onClick={() => onNavigate(item.path)}
+            className="w-full flex items-center justify-center p-3 rounded-xl transition-all duration-200 app-hover"
+            style={isActive
+              ? { backgroundColor: 'rgba(37,99,235,0.1)', color: 'var(--color-primary-main)' }
+              : { color: 'var(--color-text-secondary)' }
+            }
+            title={item.label}
+          >
+            <DynamicIcon name={item.icon} size={20} />
+          </button>
+        ) : (
+          <div className="w-full flex items-center justify-center p-3 rounded-xl text-gray-400 cursor-default">
+            <DynamicIcon name={item.icon} size={20} />
+          </div>
+        )}
+        {/* Tooltip */}
+        <div
+          className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap"
+          style={{ backgroundColor: 'var(--color-text-primary)', color: 'var(--color-bg-main)' }}
+        >
+          {item.label}
+          {item.badge && <span className="ml-1 text-xs opacity-75">({item.badge})</span>}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen lg:flex" style={{ backgroundColor: 'var(--color-bg-main)' }}>
-      {mobileOpen && (
+    <div>
         <button
-          type="button"
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-30 bg-slate-950/45 lg:hidden"
-          aria-label="Close sidebar"
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-80 transform border-r transition-transform duration-300 lg:static lg:translate-x-0 ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        onClick={() => {
+          if (hasChildren) {
+            setIsOpen(!isExpanded);
+          } else if (item.path) {
+            onNavigate(item.path);
+          }
+        }}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 app-hover ${
+          hasChildren && !item.path ? 'cursor-pointer' : ''
         }`}
         style={{
-          borderColor: 'var(--color-bg-border)',
-          backgroundColor: theme === 'dark' ? 'rgba(17, 24, 39, 0.96)' : 'rgba(255, 255, 255, 0.97)',
-          backdropFilter: 'blur(14px)',
+          paddingLeft: `${12 + level * 16}px`,
+          ...(isActive
+            ? { backgroundColor: 'rgba(37,99,235,0.1)', color: 'var(--color-primary-main)', fontWeight: 500 }
+            : { color: 'var(--color-text-primary)' }
+          ),
         }}
       >
-        <div className="flex h-full flex-col p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <Link to="/home" className="flex items-center gap-3">
-              <div
-                className="flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-sm"
-                style={{ backgroundColor: 'var(--color-primary-main)' }}
+        <DynamicIcon name={item.icon} size={18} />
+        <span className="flex-1 text-left text-sm truncate">{item.label}</span>
+        {item.badge && (
+          <span
+            className={`text-xs px-1.5 py-0.5 rounded-full ${
+              item.badgeColor === 'purple'
+                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+            }`}
+          >
+            {item.badge}
+          </span>
+        )}
+        {hasChildren && (
+          <DynamicIcon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} size={14} className="text-gray-400" />
+        )}
+      </button>
+      {hasChildren && isExpanded && (
+        <div
+          className="ml-2 mt-1 space-y-1 border-l"
+          style={{ borderColor: 'var(--color-bg-border)' }}
+        >
+          {item.children.map((child) => (
+            <MenuItemRenderer
+              key={child.id}
+              item={child}
+              currentPath={currentPath}
+              currentSearch={currentSearch}
+              level={level + 1}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Main Layout Component
+export default function AppLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const sidebarRef = useRef(null);
+
+  // State
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [menuSearch, setMenuSearch] = useState('');
+  const [theme, setTheme] = useState(() => {
+    const pref = getStoredThemePreference();
+    // Apply immediately — before first render paint
+    applyThemeToDOM(pref);
+    return pref;
+  });
+
+  // Get user role from localStorage (in real app, this would come from auth context)
+  const [role] = useState(() => localStorage.getItem('trustdrive-user-role') || 'driver');
+  const [user] = useState(() => {
+    try {
+      const raw = localStorage.getItem('trustdrive-auth-user');
+      return raw ? JSON.parse(raw) : { name: 'John Driver', email: 'john@example.com' };
+    } catch {
+      return { name: 'User', email: 'user@drivetrust.com' };
+    }
+  });
+
+  // Get current menus based on role
+  const menus = roleMenus[role] || roleMenus.driver;
+
+  // Filter menus based on search
+  const filteredMenus = useMemo(() => {
+    if (!menuSearch.trim()) return menus;
+    const query = menuSearch.toLowerCase();
+    return menus
+      .map((category) => ({
+        ...category,
+        items: category.items.filter((item) => {
+          const matchesItem = item.label.toLowerCase().includes(query);
+          const matchesChild = item.children?.some((child) => child.label.toLowerCase().includes(query));
+          return matchesItem || matchesChild;
+        }),
+      }))
+      .filter((category) => category.items.length > 0);
+  }, [menus, menuSearch]);
+
+  // Apply theme to DOM synchronously before paint whenever preference changes
+  useLayoutEffect(() => {
+    applyThemeToDOM(theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handler = () => applyThemeToDOM('system');
+      mediaQuery.addEventListener('change', handler);
+      return () => mediaQuery.removeEventListener('change', handler);
+    }
+  }, [theme]);
+
+  // Close sidebar on mobile when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarOpen && window.innerWidth < 1024) {
+        if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+          setSidebarOpen(false);
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sidebarOpen]);
+
+  // Navigation handler
+  const handleNavigate = (path) => {
+    navigate(path);
+    if (window.innerWidth < 1024) setSidebarOpen(false);
+  };
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('trustdrive-user-role');
+    localStorage.removeItem('trustdrive-auth-user');
+    window.location.href = '/login';
+  };
+
+  // Get current page title for header
+  const getPageTitle = () => {
+    const search = location.search;
+    for (const category of menus) {
+      for (const item of category.items) {
+        if (isPathActive(item.path, location.pathname, search)) return item.label;
+        if (item.children) {
+          const childMatch = item.children.find((child) => isPathActive(child.path, location.pathname, search));
+          if (childMatch) return childMatch.label;
+        }
+      }
+    }
+    return 'Dashboard';
+  };
+
+  return (
+    <div
+      className="min-h-screen transition-colors duration-300"
+      style={{ backgroundColor: 'var(--color-bg-main)' }}
+    >
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl shadow-lg border"
+        style={{ backgroundColor: 'var(--color-bg-card)', color: 'var(--color-text-primary)', borderColor: 'var(--color-bg-border)' }}
+      >
+        <Icons.Menu size={22} />
+      </button>
+
+      {/* Sidebar */}
+      <aside
+        ref={sidebarRef}
+        className={`fixed inset-y-0 left-0 z-40 border-r transition-all duration-300 ease-in-out flex flex-col h-full shadow-xl ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${sidebarCollapsed ? 'w-20' : 'w-72'}`}
+        style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-bg-border)' }}
+      >
+        {/* Logo Header */}
+        <div
+          className={`p-5 border-b ${sidebarCollapsed ? 'px-2' : ''}`}
+          style={{ borderColor: 'var(--color-bg-border)' }}
+        >
+          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+            {!sidebarCollapsed ? (
+              <>
+                <Link to="/home" className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-xl">DT</span>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>DriveTrust</div>
+                    <div className="text-[10px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                      {roleLabels[role] || 'Portal'}
+                    </div>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => setSidebarCollapsed(true)}
+                  className="p-2 app-hover rounded-lg transition-colors"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  <Icons.ChevronLeft size={18} />
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setSidebarCollapsed(false)}
+                className="p-2 app-hover rounded-lg transition-colors"
+                style={{ color: 'var(--color-text-secondary)' }}
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>DriveTrust</p>
-                <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-secondary)' }}>
-                  {roleLabels[role]} workspace
-                </p>
-              </div>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="rounded-xl border p-2.5 lg:hidden"
-              style={{ borderColor: 'var(--color-bg-border)', color: 'var(--color-text-primary)' }}
-              aria-label="Close sidebar"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+                <Icons.ChevronRight size={18} />
+              </button>
+            )}
           </div>
+        </div>
 
+        {/* User Profile Card (expanded only) */}
+        {!sidebarCollapsed && (
           <div
-            className="mt-6 rounded-2xl border p-4"
+            className="m-4 p-3 rounded-xl border"
             style={{
+              backgroundColor: 'rgba(37, 99, 235, 0.07)',
               borderColor: 'var(--color-bg-border)',
-              background: theme === 'dark'
-                ? 'linear-gradient(160deg, rgba(59, 130, 246, 0.18), rgba(17, 24, 39, 0.96))'
-                : 'linear-gradient(160deg, rgba(37, 99, 235, 0.12), rgba(255, 255, 255, 0.96))',
             }}
           >
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold text-white"
-                style={{ backgroundColor: 'var(--color-primary-main)' }}
-              >
-                {(authUser?.name || roleLabels[role]).slice(0, 2).toUpperCase()}
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {authUser?.name || roleLabels[role]}
-                </p>
-                <p className="truncate text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                  {authUser?.email || 'Role-based session'}
-                </p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{user?.name || 'User'}</p>
+                <p className="text-xs truncate" style={{ color: 'var(--color-text-secondary)' }}>{user?.email || 'user@drivetrust.com'}</p>
               </div>
             </div>
-            <p className="mt-3 text-[11px] uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-secondary)' }}>
-              Restricted Scope
-            </p>
-            <p className="mt-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              Access is locked to your assigned role links only.
-             </p>
-           </div>
-
-          <div className="mt-8 flex-1">
-            <p className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-secondary)' }}>
-              Navigation
-            </p>
-
-            <nav className="space-y-2">
-              {navItems.map((item) => {
-                const active = isLinkActive(item.to, location)
-
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition"
-                    style={{
-                      borderColor: active ? 'var(--color-primary-main)' : 'var(--color-bg-border)',
-                      color: active ? 'var(--color-primary-main)' : 'var(--color-text-secondary)',
-                      backgroundColor: active ? 'rgba(37, 99, 235, 0.12)' : 'var(--color-bg-card)',
-                    }}
-                  >
-                    <span
-                      className="flex h-8 w-8 items-center justify-center rounded-xl"
-                      style={{
-                        backgroundColor: active ? 'rgba(37, 99, 235, 0.2)' : 'rgba(37, 99, 235, 0.12)',
-                      }}
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconPathFor(item.label)} />
-                      </svg>
-                    </span>
-                    <span className="flex-1">{item.label}</span>
-                    {active && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--color-primary-main)' }} />}
-                  </Link>
-                )
-              })}
-            </nav>
+            <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--color-bg-border)' }}>
+              <div className="flex items-center justify-between text-xs">
+                <span style={{ color: 'var(--color-text-secondary)' }}>Role</span>
+                <span className="font-medium text-blue-600 capitalize">{role}</span>
+              </div>
+            </div>
           </div>
+        )}
 
-          <div className="mt-6 grid grid-cols-2 gap-2">
+        {/* Collapsed user avatar */}
+        {sidebarCollapsed && (
+          <div className="my-4 flex justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
+              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+          </div>
+        )}
+
+        {/* Search (expanded only) */}
+        {!sidebarCollapsed && (
+          <div className="px-4 mt-2">
+            <div className="relative">
+              <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type="text"
+                placeholder="Search menu..."
+                value={menuSearch}
+                onChange={(e) => setMenuSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-transparent focus:border-blue-500 rounded-xl outline-none transition-colors"
+                style={{ backgroundColor: 'var(--color-bg-hover)', color: 'var(--color-text-primary)' }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Navigation Menu */}
+        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+          {filteredMenus.map((category) => (
+            <div key={category.id}>
+              {!sidebarCollapsed && (
+                <div className="flex items-center gap-2 px-3 mb-2">
+                  <DynamicIcon name={category.icon} size={14} className="text-gray-400" />
+                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                    {category.category}
+                  </span>
+                </div>
+              )}
+              <div className="space-y-1">
+                {category.items.map((item) => (
+                  <MenuItemRenderer
+                    key={item.id}
+                    item={item}
+                    currentPath={location.pathname}
+                    currentSearch={location.search}
+                    collapsed={sidebarCollapsed}
+                    onNavigate={handleNavigate}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {filteredMenus.length === 0 && !sidebarCollapsed && (
+            <div className="text-center py-8">
+              <Icons.Search className="mx-auto text-gray-400 mb-2" size={32} />
+              <p className="text-sm text-gray-500">No menu items found</p>
+              <button onClick={() => setMenuSearch('')} className="text-xs text-blue-600 mt-1">
+                Clear search
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div
+          className={`p-4 border-t ${sidebarCollapsed ? 'px-2' : ''}`}
+          style={{ borderColor: 'var(--color-bg-border)' }}
+        >
+          <div className={`flex ${sidebarCollapsed ? 'flex-col gap-2' : 'gap-2'}`}>
             <button
-              type="button"
-              onClick={toggleTheme}
-              className="rounded-xl border px-3 py-2 text-xs font-semibold"
-              style={{
-                borderColor: 'var(--color-bg-border)',
-                color: 'var(--color-text-secondary)',
-                backgroundColor: 'var(--color-bg-card)',
-              }}
+              onClick={() => setTheme(resolveTheme(theme) === 'dark' ? 'light' : 'dark')}
+              className={`flex items-center justify-center gap-2 rounded-xl border app-hover transition-all ${
+                sidebarCollapsed ? 'p-3' : 'px-3 py-2 text-sm'
+              }`}
+              style={{ borderColor: 'var(--color-bg-border)', color: 'var(--color-text-primary)' }}
+              title={resolveTheme(theme) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {theme === 'light' ? 'Dark mode' : 'Light mode'}
+              {resolveTheme(theme) === 'dark' ? <Icons.Sun size={16} /> : <Icons.Moon size={16} />}
+              {!sidebarCollapsed && <span>{resolveTheme(theme) === 'dark' ? 'Light mode' : 'Dark mode'}</span>}
             </button>
 
             <button
-              type="button"
-              onClick={() => {
-                localStorage.removeItem('trustdrive-user-role')
-                localStorage.removeItem('trustdrive-auth-user')
-                window.location.href = '/login'
-              }}
-              className="rounded-xl border px-3 py-2 text-xs font-semibold"
-              style={{
-                borderColor: 'var(--color-bg-border)',
-                color: 'var(--color-text-primary)',
-                backgroundColor: 'var(--color-bg-card)',
-              }}
+              onClick={handleLogout}
+              className={`flex items-center justify-center gap-2 rounded-xl border text-red-600 hover:bg-red-50 transition-all ${
+                sidebarCollapsed ? 'p-3' : 'px-3 py-2 text-sm'
+              }`}
+              style={{ borderColor: 'var(--color-bg-border)' }}
+              title="Sign out"
             >
-              Sign out
+              <Icons.LogOut size={16} />
+              {!sidebarCollapsed && <span>Sign out</span>}
             </button>
           </div>
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1">
+      {/* Main Content */}
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
+        {/* Top Navigation Bar */}
         <header
-          className="sticky top-0 z-30 border-b"
-          style={{
-            borderColor: 'var(--color-bg-border)',
-            backgroundColor: theme === 'dark' ? 'rgba(11, 18, 32, 0.82)' : 'rgba(249, 250, 251, 0.9)',
-            backdropFilter: 'blur(12px)',
-          }}
+          className="sticky top-0 z-30 backdrop-blur-md border-b"
+          style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-bg-border)' }}
         >
-          <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between px-4 py-3 lg:px-8">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileOpen(true)}
-                className="rounded-xl border p-2.5 lg:hidden"
-                style={{ borderColor: 'var(--color-bg-border)', color: 'var(--color-text-primary)' }}
-                aria-label="Open sidebar"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-
+              {sidebarCollapsed && (
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  <Icons.Menu size={20} />
+                </button>
+              )}
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{activeItemLabel}</p>
+                <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>{getPageTitle()}</h1>
                 <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                  {roleLabels[role]} workspace • {today}
+                  {roleLabels[role]} • {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-full border px-3 py-1.5 text-xs font-semibold" style={{ borderColor: 'var(--color-bg-border)', color: 'var(--color-text-secondary)' }}>
-              Secure session
+            <div className="flex items-center gap-2">
+              <div
+                className="hidden sm:flex items-center gap-1 p-1 rounded-lg"
+                style={{ backgroundColor: 'var(--color-bg-hover)' }}
+              >
+                <button
+                  onClick={() => setTheme('light')}
+                  className="p-1.5 rounded-md transition"
+                  style={resolveTheme(theme) === 'light' ? { backgroundColor: 'var(--color-bg-card)', boxShadow: '0 1px 2px rgba(0,0,0,0.12)' } : { color: 'var(--color-text-secondary)' }}
+                  title="Light mode"
+                >
+                  <Icons.Sun size={14} />
+                </button>
+                <button
+                  onClick={() => setTheme('dark')}
+                  className="p-1.5 rounded-md transition"
+                  style={resolveTheme(theme) === 'dark' ? { backgroundColor: 'var(--color-bg-card)', boxShadow: '0 1px 2px rgba(0,0,0,0.12)' } : { color: 'var(--color-text-secondary)' }}
+                  title="Dark mode"
+                >
+                  <Icons.Moon size={14} />
+                </button>
+                <button
+                  onClick={() => setTheme('system')}
+                  className="p-1.5 rounded-md transition"
+                  style={theme === 'system' ? { backgroundColor: 'var(--color-bg-card)', boxShadow: '0 1px 2px rgba(0,0,0,0.12)' } : { color: 'var(--color-text-secondary)' }}
+                  title="System default"
+                >
+                  <Icons.Monitor size={14} />
+                </button>
+              </div>
+
+              <div className="relative">
+                <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <Icons.Bell size={20} />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-lg app-hover sm:hidden"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                <Icons.LogOut size={20} />
+              </button>
             </div>
           </div>
         </header>
 
-        <main key={`${role}-${location.pathname}${location.search}`}>
+        {/* Page Content */}
+        <main className="p-4 lg:p-6">
           <Outlet context={{ role }} />
         </main>
       </div>
     </div>
-  )
+  );
 }

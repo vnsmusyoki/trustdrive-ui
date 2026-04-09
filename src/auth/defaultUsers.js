@@ -7,8 +7,11 @@ export const defaultUsers = [
     role: 'driver',
     links: [
       { label: 'Home', to: '/home' },
+      { label: 'Overview', to: '/home?section=overview' },
       { label: 'Trip Activity', to: '/home?section=trips' },
+      { label: 'Ratings', to: '/home?section=ratings' },
       { label: 'Documents', to: '/home?section=documents' },
+      { label: 'Earnings', to: '/home?section=earnings' },
     ],
   },
   {
@@ -19,8 +22,11 @@ export const defaultUsers = [
     role: 'owner',
     links: [
       { label: 'Home', to: '/home' },
+      { label: 'Overview', to: '/home?section=overview' },
       { label: 'Fleet', to: '/home?section=fleet' },
+      { label: 'Driver Requests', to: '/home?section=requests' },
       { label: 'Payouts', to: '/home?section=payouts' },
+      { label: 'Claims', to: '/home?section=claims' },
     ],
   },
   {
@@ -31,8 +37,11 @@ export const defaultUsers = [
     role: 'platform',
     links: [
       { label: 'Home', to: '/home' },
+      { label: 'Overview', to: '/home?section=overview' },
       { label: 'Partners', to: '/home?section=partners' },
       { label: 'Moderation', to: '/home?section=moderation' },
+      { label: 'API Health', to: '/home?section=api-health' },
+      { label: 'Insights', to: '/home?section=insights' },
     ],
   },
   {
@@ -43,9 +52,11 @@ export const defaultUsers = [
     role: 'super_admin',
     links: [
       { label: 'Home', to: '/home' },
+      { label: 'Overview', to: '/home?section=overview' },
       { label: 'User Governance', to: '/home?section=governance' },
       { label: 'System Audit', to: '/home?section=audit' },
       { label: 'Platform Settings', to: '/home?section=settings' },
+      { label: 'Security Center', to: '/home?section=security' },
     ],
   },
 ]
