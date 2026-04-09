@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { defaultUsers, getDefaultUserByCredentials } from '@/auth/defaultUsers'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const palette = {
@@ -15,9 +16,11 @@ const palette = {
 }
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: '', password: '', remember: true })
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ email: '', password: '', remember: true, role: 'driver' })
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [authError, setAuthError] = useState('')
 
   const errors = useMemo(() => {
     const nextErrors = {}
@@ -50,12 +53,29 @@ export default function LoginPage() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setSubmitted(true)
+    setAuthError('')
 
     if (!isFormValid) return
 
-    // Placeholder for API integration.
-    // This is intentionally non-blocking until backend auth is wired.
-    console.log('Login payload:', form)
+    const matchedUser = getDefaultUserByCredentials(form.email, form.password)
+    if (!matchedUser) {
+      setAuthError('Invalid credentials. Use one of the default users below.')
+      return
+    }
+
+    // Temporary user session until backend auth is wired.
+    localStorage.setItem('trustdrive-user-role', matchedUser.role)
+    localStorage.setItem(
+      'trustdrive-auth-user',
+      JSON.stringify({
+        id: matchedUser.id,
+        name: matchedUser.name,
+        email: matchedUser.email,
+        role: matchedUser.role,
+        links: matchedUser.links,
+      })
+    )
+    navigate('/home')
   }
 
   return (
@@ -207,6 +227,29 @@ export default function LoginPage() {
                 </Link>
               </div>
 
+              <div>
+                <label htmlFor="role" className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>
+                  Sign in as
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={form.role}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
+                  style={{
+                    backgroundColor: palette.card,
+                    borderColor: palette.border,
+                    color: palette.text,
+                  }}
+                >
+                  <option value="driver">Driver</option>
+                  <option value="owner">Owner</option>
+                  <option value="platform">Platform</option>
+                  <option value="super_admin">Super Admin</option>
+                </select>
+              </div>
+
               <button
                 type="submit"
                 className="group inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
@@ -217,7 +260,45 @@ export default function LoginPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </button>
+
+              {authError && (
+                <p className="rounded-xl border px-3 py-2 text-xs font-medium" style={{ color: palette.danger, borderColor: palette.danger }}>
+                  {authError}
+                </p>
+              )}
             </form>
+
+            <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: palette.border, backgroundColor: 'rgba(148, 163, 184, 0.08)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: palette.primary }}>
+                Default demo users
+              </p>
+              <p className="mt-1 text-xs" style={{ color: palette.textSecondary }}>
+                Use these accounts to test role-based access links.
+              </p>
+
+              <div className="mt-3 space-y-2">
+                {defaultUsers.map((user) => (
+                  <button
+                    key={user.id}
+                    type="button"
+                    onClick={() => {
+                      setForm((prev) => ({
+                        ...prev,
+                        email: user.email,
+                        password: user.password,
+                        role: user.role,
+                      }))
+                      setAuthError('')
+                    }}
+                    className="w-full rounded-xl border px-3 py-2 text-left text-xs transition hover:opacity-90"
+                    style={{ borderColor: palette.border, backgroundColor: palette.card, color: palette.text }}
+                  >
+                    <span className="font-semibold">{user.name}</span>
+                    <span style={{ color: palette.textSecondary }}> • {user.email} • {user.role}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="my-6 flex items-center gap-3">
               <div className="h-px flex-1" style={{ backgroundColor: palette.border }} />

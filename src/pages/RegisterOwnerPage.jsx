@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -16,6 +16,7 @@ const palette = {
 }
 
 export default function RegisterOwnerPage() {
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -48,7 +49,8 @@ export default function RegisterOwnerPage() {
     event.preventDefault()
     setSubmitted(true)
     if (Object.keys(errors).length > 0) return
-    console.log('Owner registration payload:', form)
+    localStorage.setItem('trustdrive-user-role', 'owner')
+    navigate('/home')
   }
 
   return (

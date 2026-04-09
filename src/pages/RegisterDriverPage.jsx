@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_REGEX = /^\+?[0-9\s-]{8,}$/
@@ -17,6 +17,7 @@ const palette = {
 }
 
 export default function RegisterDriverPage() {
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -53,7 +54,8 @@ export default function RegisterDriverPage() {
     event.preventDefault()
     setSubmitted(true)
     if (!isValid) return
-    console.log('Driver registration payload:', form)
+    localStorage.setItem('trustdrive-user-role', 'driver')
+    navigate('/home')
   }
 
   return (

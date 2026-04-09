@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -16,6 +16,7 @@ const palette = {
 }
 
 export default function RegisterPlatformPage() {
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     companyName: '',
     platformName: '',
@@ -50,7 +51,8 @@ export default function RegisterPlatformPage() {
     event.preventDefault()
     setSubmitted(true)
     if (Object.keys(errors).length > 0) return
-    console.log('Platform registration payload:', form)
+    localStorage.setItem('trustdrive-user-role', 'platform')
+    navigate('/home')
   }
 
   return (

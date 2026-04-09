@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import GuestLayout from './layouts/GuestLayout'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -8,6 +8,8 @@ import RegisterOwnerPage from './pages/RegisterOwnerPage'
 import RegisterPlatformPage from './pages/RegisterPlatformPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import SetNewPasswordPage from './pages/SetNewPasswordPage'
+import Dashboard from '@/pages/dashboard/Dashboard'
+import AppLayout from '@/layouts/AppLayout'
 
 function App() { 
   return (
@@ -22,6 +24,23 @@ function App() {
           <Route path="/register/platform" element={<RegisterPlatformPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/set-new-password" element={<SetNewPasswordPage />} />
+        </Route>
+     
+
+        <Route element={<AppLayout />} requiredRole={["driver", "owner", "platform"]}>
+            <Route path="/home" element={<Dashboard />} />
+        </Route>
+
+        <Route element={<AppLayout />} requiredRole={["driver"]}>
+           {/* driver related links */}
+        </Route>
+
+        <Route element={<AppLayout />} requiredRole={["owner"]}>
+            {/* owner related links */}
+        </Route>
+
+        <Route element={<AppLayout />} requiredRole={["platform"]}>
+            {/* platform related links */}
         </Route>
       </Routes>
     </BrowserRouter>
