@@ -3,6 +3,11 @@ import GuestLayout from './layouts/GuestLayout'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import RegisterDriverPage from './pages/RegisterDriverPage'
+import RegisterOwnerPage from './pages/RegisterOwnerPage'
+import RegisterPlatformPage from './pages/RegisterPlatformPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import SetNewPasswordPage from './pages/SetNewPasswordPage'
 
 function App() { 
   return (
@@ -12,6 +17,11 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register/driver" element={<RegisterDriverPage />} />
+          <Route path="/register/owner" element={<RegisterOwnerPage />} />
+          <Route path="/register/platform" element={<RegisterPlatformPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/set-new-password" element={<SetNewPasswordPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

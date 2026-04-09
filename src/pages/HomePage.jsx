@@ -1,13 +1,16 @@
-// HomePage.jsx
+// HomePage.jsx - TEMP FILE TO APPLY PATCH
 import { useState, useEffect, useRef } from 'react'
+import { useTheme } from '@/hooks/useTheme'
 import Balanced from '@/assets/balanced.svg'
 import User from '@/assets/user.svg'
 import Search from '@/assets/search.svg'
 import Verified from '@/assets/verified.svg'
+
 export default function HomePage() {
   const [hoveredFeature, setHoveredFeature] = useState(null)
   const [animatedStats, setAnimatedStats] = useState({ drivers: 0, owners: 0, passengers: 0 })
   const statsRef = useRef(null)
+  const { theme } = useTheme()
 
   function animateStats() {
     const targets = { drivers: 87, owners: 76, passengers: 91 }
@@ -47,8 +50,16 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div> 
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#F9FAFB] via-white to-[#EFF6FF]">
+    <div>
+      {/* Hero Section */}
+      <section
+        className="relative overflow-hidden"
+        style={{
+          background: theme === 'dark'
+            ? 'var(--color-bg-main)'
+            : 'linear-gradient(135deg, #F9FAFB 0%, white 50%, #EFF6FF 100%)',
+        }}
+      >
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#2563EB] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
@@ -58,29 +69,45 @@ export default function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#E5E7EB] shadow-sm px-4 py-1.5 rounded-full text-sm font-medium mb-6 animate-fadeInUp">
+            {/* Badge */}
+            <div
+              className="inline-flex items-center gap-2 backdrop-blur-sm rounded-full text-sm font-medium mb-6 animate-fadeInUp px-4 py-1.5 shadow-sm"
+              style={{
+                backgroundColor: theme === 'dark' ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                border: `1px solid var(--color-bg-border)`,
+              }}
+            >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
               </span>
-              <span className="text-[#111827]">✨ Now Live —</span>
+              <span style={{ color: 'var(--color-text-primary)' }}>✨ Now Live —</span>
               <span className="bg-gradient-to-r from-[#2563EB] to-[#7C3AED] bg-clip-text text-transparent font-semibold">
                 Neutral Reputation Intelligence
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-[#111827] mb-6 leading-[1.1] animate-fadeInUp animation-delay-100">
+            {/* Heading */}
+            <h1
+              className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight mb-6 leading-[1.1] animate-fadeInUp animation-delay-100"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
               Trust Without{' '}
               <span className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent">
                 Boundaries
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-[#6B7280] mb-8 max-w-2xl mx-auto animate-fadeInUp animation-delay-200">
+            {/* Subheading */}
+            <p
+              className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto animate-fadeInUp animation-delay-200"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
               Cross-platform reputation intelligence for drivers, car owners, and passengers.
               Verified ratings. AI insights. Total neutrality.
             </p>
 
+            {/* CTA Buttons */}
             <div className="flex flex-wrap justify-center gap-4 animate-fadeInUp animation-delay-300">
               <button className="group relative bg-gradient-to-r from-[#2563EB] to-[#1E40AF] text-white px-8 py-3.5 rounded-full font-semibold shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
                 <span className="relative z-10 flex items-center gap-2">
@@ -91,27 +118,34 @@ export default function HomePage() {
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </button>
-              <button className="border-2 border-[#2563EB] text-[#2563EB] px-8 py-3.5 rounded-full font-semibold hover:bg-[#EFF6FF] transition-all duration-300 hover:-translate-y-0.5">
+              <button
+                className="px-8 py-3.5 rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5 border-2"
+                style={{
+                  borderColor: 'var(--color-primary-main)',
+                  color: 'var(--color-primary-main)',
+                  backgroundColor: theme === 'dark' ? 'rgba(37, 99, 235, 0.1)' : '#EFF6FF',
+                }}
+              >
                 Watch Demo
               </button>
             </div>
 
-            {/* Trust badge */}
-            <div className="flex items-center justify-center gap-6 mt-12 text-sm text-[#6B7280]">
+            {/* Trust badges */}
+            <div className="flex items-center justify-center gap-6 mt-12 text-sm flex-wrap" style={{ color: 'var(--color-text-secondary)' }}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>GDPR Compliant</span>
               </div>
-              <div className="w-1 h-1 bg-[#D1D5DB] rounded-full"></div>
+              <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'var(--color-bg-border)' }}></div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Data Portability</span>
               </div>
-              <div className="w-1 h-1 bg-[#D1D5DB] rounded-full"></div>
+              <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'var(--color-bg-border)' }}></div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -121,44 +155,64 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Stats Bar */}
+          {/* Stats Section */}
           <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
             {[
               { key: 'drivers', value: animatedStats.drivers, label: 'of drivers would use a neutral reputation platform', suffix: '%' },
               { key: 'owners', value: animatedStats.owners, label: 'of car owners would pay for verified driver history', suffix: '%' },
               { key: 'passengers', value: animatedStats.passengers, label: 'of passengers would check driver ratings before a trip', suffix: '%' },
             ].map((stat, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-6 text-center shadow-sm border border-[#E5E7EB] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div
+                key={idx}
+                className="rounded-2xl p-6 text-center shadow-sm border hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  backgroundColor: 'var(--color-bg-card)',
+                  borderColor: 'var(--color-bg-border)',
+                }}
+              >
                 <div className="text-4xl font-bold bg-gradient-to-r from-[#2563EB] to-[#7C3AED] bg-clip-text text-transparent">
                   {Math.round(stat.value)}{stat.suffix}
                 </div>
-                <div className="text-sm text-[#6B7280] mt-2">{stat.label}</div>
+                <div className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Core Features Grid */}
+          {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
             {features.map((feature, idx) => (
               <div
                 key={idx}
-                className="group relative bg-white rounded-2xl p-6 shadow-sm border border-[#E5E7EB] hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden"
+                className="group relative rounded-2xl p-6 shadow-sm border hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden"
+                style={{
+                  backgroundColor: 'var(--color-bg-card)',
+                  borderColor: 'var(--color-bg-border)',
+                }}
                 onMouseEnter={() => setHoveredFeature(idx)}
                 onMouseLeave={() => setHoveredFeature(null)}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-[#2563EB]/0 to-[#7C3AED]/0 group-hover:from-[#2563EB]/5 group-hover:to-[#7C3AED]/5 transition-all duration-500"></div>
                 <div className="relative">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                    hoveredFeature === idx ? 'bg-gradient-to-br from-[#2563EB] to-[#7C3AED] shadow-lg scale-110' : 'bg-[#EFF6FF]'
-                  }`}>
+                  <div
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
+                      hoveredFeature === idx ? 'bg-gradient-to-br from-[#2563EB] to-[#7C3AED] shadow-lg scale-110' : ''
+                    }`}
+                    style={hoveredFeature !== idx ? { backgroundColor: 'var(--color-bg-border)' } : {}}
+                  >
                     <img
                       src={feature.icon}
                       alt={feature.title}
                       className={`w-7 h-7 transition-all duration-300 ${hoveredFeature === idx ? 'brightness-0 invert scale-110' : ''}`}
                     />
                   </div>
-                  <h3 className="font-bold text-[#111827] text-lg mb-2">{feature.title}</h3>
-                  <p className="text-[#6B7280] text-sm leading-relaxed">{feature.description}</p>
+                  <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                    {feature.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -166,17 +220,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works - Data Portability */}
-      <section className="py-20 bg-white">
+      {/* How It Works Section */}
+      <section
+        className="py-20"
+        style={{
+          backgroundColor: 'var(--color-bg-card)',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#EFF6FF] px-3 py-1 rounded-full text-sm text-[#2563EB] font-medium mb-4">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-4"
+              style={{
+                backgroundColor: theme === 'dark' ? 'rgba(59, 130, 246, 0.1)' : '#EFF6FF',
+                color: 'var(--color-primary-main)',
+              }}
+            >
               <span>⚡ Simple Process</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-[#111827] mb-4">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>
               Your Reputation. <span className="text-[#2563EB]">Portable.</span>
             </h2>
-            <p className="text-lg text-[#6B7280]">
+            <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
               DriveTrust lets you export your Uber/Bolt rating history and build a verified profile
               that works across all platforms.
             </p>
@@ -191,16 +256,19 @@ export default function HomePage() {
                   <div className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-[#2563EB] to-[#7C3AED] text-white rounded-2xl flex items-center justify-center text-2xl font-bold shadow-lg">
                     {idx + 1}
                   </div>
-                  <h3 className="font-bold text-[#111827] text-lg mb-2">{step.title}</h3>
-                  <p className="text-sm text-[#6B7280]">{step.description}</p>
+                  <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                    {step.title}
+                  </h3>
+                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    {step.description}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Demo button */}
           <div className="text-center mt-12">
-            <button className="inline-flex items-center gap-2 text-[#2563EB] font-medium hover:gap-3 transition-all">
+            <button className="inline-flex items-center gap-2 font-medium hover:gap-3 transition-all" style={{ color: 'var(--color-primary-main)' }}>
               See how it works
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -210,50 +278,99 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose DriveTrust - 4 Principles */}
-      <section className="py-20 bg-gradient-to-b from-[#F9FAFB] to-white">
+      {/* Principles Section */}
+      <section
+        className="py-20"
+        style={{
+          background: theme === 'dark'
+            ? 'linear-gradient(to bottom, var(--color-bg-main), var(--color-bg-card))'
+            : 'linear-gradient(to bottom, #F9FAFB, white)',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#F0FDF4] px-3 py-1 rounded-full text-sm text-[#10B981] font-medium mb-4">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-4"
+              style={{
+                backgroundColor: '#F0FDF4',
+                color: '#10B981',
+              }}
+            >
               <span>🎯 Our Foundation</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-[#111827] mb-4">Four Immutable Principles</h2>
-            <p className="text-lg text-[#6B7280]">Built on trust, transparency, and user ownership</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>
+              Four Immutable Principles
+            </h2>
+            <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
+              Built on trust, transparency, and user ownership
+            </p>
           </div>
 
           <div className="grid md:grid-cols-4 gap-6">
             {principles.map((principle, idx) => (
               <div
                 key={idx}
-                className="group text-center p-6 bg-white rounded-2xl border border-[#E5E7EB] hover:border-[#2563EB]/30 hover:shadow-xl transition-all duration-300"
+                className="group text-center p-6 rounded-2xl border hover:shadow-xl transition-all duration-300"
+                style={{
+                  backgroundColor: 'var(--color-bg-card)',
+                  borderColor: 'var(--color-bg-border)',
+                }}
               >
-                <div className="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-[#EFF6FF] to-[#F0F5FF] rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                <div
+                  className="w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300"
+                  style={{
+                    background: theme === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'linear-gradient(to bottom right, #EFF6FF, #F0F5FF)',
+                  }}
+                >
                   <img src={principle.icon} alt={principle.title} className="w-10 h-10" />
                 </div>
-                <h3 className="text-xl font-bold text-[#111827] mb-2">{principle.title}</h3>
-                <p className="text-[#6B7280] text-sm leading-relaxed">{principle.description}</p>
+                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  {principle.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                  {principle.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 bg-white">
+      {/* Testimonials Section */}
+      <section
+        className="py-20"
+        style={{
+          backgroundColor: 'var(--color-bg-card)',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#FEF3C7] px-3 py-1 rounded-full text-sm text-[#D97706] font-medium mb-4">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-4"
+              style={{
+                backgroundColor: '#FEF3C7',
+                color: '#D97706',
+              }}
+            >
               <span>💬 Testimonials</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-[#111827] mb-4">Trusted by the Community</h2>
-            <p className="text-lg text-[#6B7280]">Real stories from drivers, owners, and passengers</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>
+              Trusted by the Community
+            </h2>
+            <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
+              Real stories from drivers, owners, and passengers
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, idx) => (
+            {testimonials.map((testimonial,idx) => (
               <div
                 key={idx}
-                className="bg-gradient-to-br from-[#F9FAFB] to-white rounded-2xl p-8 border border-[#E5E7EB] hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="rounded-2xl p-8 border hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  backgroundColor: theme === 'dark' ? 'var(--color-bg-main)' : 'linear-gradient(to bottom right, #F9FAFB, white)',
+                  borderColor: 'var(--color-bg-border)',
+                }}
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
@@ -262,14 +379,20 @@ export default function HomePage() {
                     </svg>
                   ))}
                 </div>
-                <p className="text-[#4B5563] leading-relaxed mb-6">"{testimonial.quote}"</p>
+                <p className="leading-relaxed mb-6" style={{ color: 'var(--color-text-primary)' }}>
+                  "{testimonial.quote}"
+                </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white font-semibold">
                     {testimonial.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-semibold text-[#111827]">{testimonial.name}</p>
-                    <p className="text-sm text-[#6B7280]">{testimonial.role}</p>
+                    <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {testimonial.name}
+                    </p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                      {testimonial.role}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -279,25 +402,44 @@ export default function HomePage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-gradient-to-b from-[#F9FAFB] to-white">
+      <section
+        className="py-20"
+        style={{
+          background: theme === 'dark'
+            ? 'linear-gradient(to bottom, var(--color-bg-main), var(--color-bg-card))'
+            : 'linear-gradient(to bottom, #F9FAFB, white)',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#EFF6FF] px-3 py-1 rounded-full text-sm text-[#2563EB] font-medium mb-4">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-4"
+              style={{
+                backgroundColor: theme === 'dark' ? 'rgba(59, 130, 246, 0.1)' : '#EFF6FF',
+                color: 'var(--color-primary-main)',
+              }}
+            >
               <span>💰 Pricing</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-[#111827] mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-[#6B7280]">Start free. Scale as you grow. No hidden fees.</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
+              Start free. Scale as you grow. No hidden fees.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-4 gap-6">
             {pricing.map((plan, idx) => (
               <div
                 key={idx}
-                className={`relative bg-white rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-2 ${
-                  plan.popular
-                    ? 'border-[#2563EB] shadow-xl shadow-blue-500/10'
-                    : 'border-[#E5E7EB] hover:shadow-lg'
+                className={`relative rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-2 ${
+                  plan.popular ? 'shadow-xl shadow-blue-500/10' : 'hover:shadow-lg'
                 }`}
+                style={{
+                  backgroundColor: 'var(--color-bg-card)',
+                  borderColor: plan.popular ? '#2563EB' : 'var(--color-bg-border)',
+                }}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -307,21 +449,27 @@ export default function HomePage() {
                   </div>
                 )}
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-[#111827] mb-2">{plan.name}</h3>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                    {plan.name}
+                  </h3>
                   <div className="mb-4">
                     {plan.price === 'Custom' ? (
-                      <span className="text-2xl font-bold text-[#2563EB]">Custom</span>
+                      <span className="text-2xl font-bold" style={{ color: 'var(--color-primary-main)' }}>
+                        Custom
+                      </span>
                     ) : (
                       <>
-                        <span className="text-4xl font-bold text-[#2563EB]">${plan.price}</span>
-                        <span className="text-[#6B7280]">/month</span>
+                        <span className="text-4xl font-bold" style={{ color: 'var(--color-primary-main)' }}>
+                          ${plan.price}
+                        </span>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>/month</span>
                       </>
                     )}
                   </div>
                 </div>
                 <ul className="space-y-3 mb-6">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="text-sm text-[#6B7280] flex items-center gap-2">
+                    <li key={i} className="text-sm flex items-center gap-2" style={{ color: 'var(--color-text-secondary)' }}>
                       <svg className="w-4 h-4 text-[#10B981] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -332,9 +480,14 @@ export default function HomePage() {
                 <button
                   className={`w-full py-3 rounded-full font-semibold transition-all duration-300 ${
                     plan.popular
-                      ? 'bg-gradient-to-r from-[#2563EB] to-[#1E40AF] text-white hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5'
-                      : 'border-2 border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] hover:-translate-y-0.5'
+                      ? 'text-white hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5'
+                      : 'hover:-translate-y-0.5'
                   }`}
+                  style={{
+                    backgroundColor: plan.popular ? 'var(--color-primary-main)' : 'transparent',
+                    color: plan.popular ? 'white' : 'var(--color-primary-main)',
+                    border: plan.popular ? 'none' : `2px solid var(--color-primary-main)`,
+                  }}
                 >
                   {plan.cta}
                 </button>
@@ -407,7 +560,6 @@ export default function HomePage() {
   )
 }
 
-// Data arrays
 const features = [
   { icon: Verified, title: 'Driver Ratings', description: 'View aggregated ratings & verified history across all platforms you\'ve driven for.' },
   { icon: User, title: 'Owner Feedback', description: 'Rate car owners on payment timeliness, vehicle condition, and overall fairness.' },
