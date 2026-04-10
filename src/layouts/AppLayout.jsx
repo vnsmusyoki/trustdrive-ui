@@ -5,7 +5,7 @@ import * as Icons from 'lucide-react';
 // -----------------------------------------------------------------------------
 // Role-based menu configuration (fully scoped to DriveTrust proposal)
 // -----------------------------------------------------------------------------
-const roleMenus = {
+const roleMenus = { 
   driver: [
     {
       id: 'main',
@@ -14,8 +14,10 @@ const roleMenus = {
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
         { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+        { id: 'alerts', label: 'Smart Alerts', icon: 'Bell', path: '/home?section=alerts' },
       ],
     },
+
     {
       id: 'reputation',
       category: 'Reputation & History',
@@ -27,66 +29,151 @@ const roleMenus = {
         { id: 'upload-csv', label: 'Upload Uber/Bolt CSV', icon: 'Upload', path: '/home?section=upload-csv' },
       ],
     },
+
     {
-      id: 'feedback',
-      category: 'Feedback & Safety',
-      icon: 'MessageSquare',
+      id: 'intelligence',
+      category: 'Owner Intelligence',
+      icon: 'Search',
+      items: [
+        { id: 'owner-lookup', label: 'Search Car Owners', icon: 'Search', path: '/home?section=owner-lookup' },
+        { id: 'owner-risk', label: 'Owner Risk Score', icon: 'AlertTriangle', path: '/home?section=owner-risk' },
+      ],
+    },
+
+    {
+      id: 'safety',
+      category: 'Safety & Feedback',
+      icon: 'ShieldAlert',
       items: [
         { id: 'rate-owners', label: 'Rate Car Owners', icon: 'Building2', path: '/home?section=rate-owners' },
         { id: 'area-safety', label: 'Submit Area Safety Review', icon: 'MapPin', path: '/home?section=area-safety' },
+        { id: 'report-incident', label: 'Report Incident', icon: 'AlertOctagon', path: '/home?section=incident' },
       ],
     },
+
     {
       id: 'financial',
-      category: 'Financial',
+      category: 'Financial Management',
       icon: 'Wallet',
       items: [
         { id: 'earnings', label: 'Earnings Overview', icon: 'DollarSign', path: '/home?section=earnings' },
+        { id: 'expenses', label: 'Expenses Tracker', icon: 'Receipt', path: '/home?section=expenses' },
+        { id: 'profit', label: 'Profit & Loss', icon: 'BarChart', path: '/home?section=profit' },
+        { id: 'payments', label: 'Payment Tracker', icon: 'CreditCard', path: '/home?section=payments' },
+      ],
+    },
+
+    {
+      id: 'performance',
+      category: 'Performance & Insights',
+      icon: 'TrendingUp',
+      items: [
+        { id: 'trip-analytics', label: 'Trip Analytics', icon: 'BarChart3', path: '/home?section=trip-analytics' },
+        { id: 'ai-insights', label: 'AI Performance Insights', icon: 'Brain', path: '/home?section=ai-insights', badge: 'AI', badgeColor: 'purple' },
+      ],
+    },
+
+    {
+      id: 'work',
+      category: 'Work & Agreements',
+      icon: 'Briefcase',
+      items: [
+        { id: 'contracts', label: 'My Agreements', icon: 'FileSignature', path: '/home?section=contracts' },
+        { id: 'disputes', label: 'Disputes & Claims', icon: 'Scale', path: '/home?section=disputes' },
+        { id: 'availability', label: 'Availability Status', icon: 'ToggleRight', path: '/home?section=availability' },
+      ],
+    },
+
+    {
+      id: 'profile',
+      category: 'Profile',
+      icon: 'User',
+      items: [
+        { id: 'profile', label: 'Public Profile', icon: 'User', path: '/home?section=profile' },
         { id: 'documents', label: 'Documents', icon: 'Folder', path: '/home?section=documents' },
       ],
     },
   ],
 
-  owner: [
-    {
-      id: 'main',
-      category: 'Main',
-      icon: 'LayoutDashboard',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
-        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
-      ],
-    },
-    {
-      id: 'driver-management',
-      category: 'Driver Management',
-      icon: 'Users',
-      items: [
-        { id: 'search-drivers', label: 'Search Drivers', icon: 'Search', path: '/home?section=search-drivers' },
-        { id: 'ai-hiring', label: 'AI Hiring Assistant', icon: 'Brain', path: '/home?section=ai-hiring', badge: 'AI', badgeColor: 'purple' },
-        { id: 'bulk-search', label: 'Bulk Driver Search', icon: 'Database', path: '/home?section=bulk-search' },
-        { id: 'driver-requests', label: 'Driver Requests', icon: 'UserCheck', path: '/home?section=requests' },
-      ],
-    },
-    {
-      id: 'fleet',
-      category: 'Fleet & Operations',
-      icon: 'Truck',
-      items: [
-        { id: 'my-fleet', label: 'My Fleet', icon: 'Car', path: '/home?section=fleet' },
-        { id: 'claims', label: 'Claims & Deposits', icon: 'FileWarning', path: '/home?section=claims' },
-        { id: 'payouts', label: 'Payouts', icon: 'CreditCard', path: '/home?section=payouts' },
-      ],
-    },
-    {
-      id: 'reviews',
-      category: 'Reviews',
-      icon: 'MessageCircle',
-      items: [
-        { id: 'respond-reviews', label: 'Respond to Reviews', icon: 'Reply', path: '/home?section=respond-reviews' },
-      ],
-    },
-  ],
+
+   owner: [
+  {
+    id: 'main',
+    category: 'Main',
+    icon: 'LayoutDashboard',
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+      { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+      { id: 'alerts', label: 'Risk Alerts', icon: 'Bell', path: '/home?section=alerts' },
+    ],
+  },
+
+  {
+    id: 'driver-management',
+    category: 'Driver Management',
+    icon: 'Users',
+    items: [
+      { id: 'search-drivers', label: 'Search Drivers', icon: 'Search', path: '/home?section=search-drivers' },
+      { id: 'ai-hiring', label: 'AI Hiring Assistant', icon: 'Brain', path: '/home?section=ai-hiring', badge: 'AI', badgeColor: 'purple' },
+      { id: 'bulk-search', label: 'Bulk Driver Search', icon: 'Database', path: '/home?section=bulk-search' },
+      { id: 'driver-requests', label: 'Driver Requests', icon: 'UserCheck', path: '/home?section=requests' },
+      { id: 'driver-performance', label: 'Driver Performance', icon: 'BarChart3', path: '/home?section=driver-performance' },
+    ],
+  },
+
+  {
+    id: 'fleet',
+    category: 'Fleet & Operations',
+    icon: 'Truck',
+    items: [
+      { id: 'my-fleet', label: 'My Fleet', icon: 'Car', path: '/home?section=fleet' },
+      { id: 'maintenance', label: 'Maintenance Tracker', icon: 'Wrench', path: '/home?section=maintenance' },
+      { id: 'utilization', label: 'Vehicle Utilization', icon: 'Activity', path: '/home?section=utilization' },
+    ],
+  },
+
+  {
+    id: 'financial',
+    category: 'Financial',
+    icon: 'Wallet',
+    items: [
+      { id: 'payouts', label: 'Payouts', icon: 'CreditCard', path: '/home?section=payouts' },
+      { id: 'expenses', label: 'Fleet Expenses', icon: 'Receipt', path: '/home?section=fleet-expenses' },
+      { id: 'profit', label: 'Profit & Loss', icon: 'DollarSign', path: '/home?section=fleet-profit' },
+      { id: 'fleet-analytics', label: 'Fleet Analytics', icon: 'TrendingUp', path: '/home?section=fleet-analytics' },
+    ],
+  },
+
+  {
+    id: 'risk',
+    category: 'Risk & Compliance',
+    icon: 'Shield',
+    items: [
+      { id: 'claims', label: 'Claims & Deposits', icon: 'FileWarning', path: '/home?section=claims' },
+      { id: 'disputes', label: 'Disputes & Cases', icon: 'Scale', path: '/home?section=disputes' },
+      { id: 'contracts', label: 'Driver Contracts', icon: 'FileSignature', path: '/home?section=contracts' },
+    ],
+  },
+
+  {
+    id: 'reviews',
+    category: 'Reviews & Reputation',
+    icon: 'MessageCircle',
+    items: [
+      { id: 'respond-reviews', label: 'Respond to Reviews', icon: 'Reply', path: '/home?section=respond-reviews' },
+      { id: 'my-reputation', label: 'My Reputation', icon: 'Star', path: '/home?section=my-reputation' },
+    ],
+  },
+
+  {
+    id: 'insights',
+    category: 'AI Insights',
+    icon: 'Brain',
+    items: [
+      { id: 'ai-insights', label: 'AI Fleet Insights', icon: 'Brain', path: '/home?section=ai-insights', badge: 'AI', badgeColor: 'purple' },
+    ],
+  },
+],
 
   passenger: [
     {
@@ -121,70 +208,178 @@ const roleMenus = {
   ],
 
   platform: [
-    {
-      id: 'main',
-      category: 'Main',
-      icon: 'LayoutDashboard',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
-        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
-      ],
-    },
-    {
-      id: 'partnership',
-      category: 'Partnership',
-      icon: 'Handshake',
-      items: [
-        { id: 'partners', label: 'Partner Analytics', icon: 'BarChart3', path: '/home?section=partners' },
-        { id: 'insights', label: 'Fleet Insights', icon: 'TrendingUp', path: '/home?section=insights' },
-        { id: 'data-export', label: 'Bulk Data Export', icon: 'Download', path: '/home?section=data-export' },
-      ],
-    },
-    {
-      id: 'governance',
-      category: 'Governance',
-      icon: 'Gavel',
-      items: [
-        { id: 'moderation', label: 'Review Moderation', icon: 'Flag', path: '/home?section=moderation' },
-        { id: 'disputes', label: 'Dispute Resolution', icon: 'Scale', path: '/home?section=disputes' },
-        { id: 'api-health', label: 'API Health & Usage', icon: 'Activity', path: '/home?section=api-health' },
-      ],
-    },
-  ],
+  {
+    id: 'main',
+    category: 'Main',
+    icon: 'LayoutDashboard',
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+      { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+    ],
+  },
 
+  {
+    id: 'tracking',
+    category: 'Tracking & Operations',
+    icon: 'Map',
+    items: [
+      { id: 'live-map', label: 'Live Vehicle Map', icon: 'Map', path: '/home?section=live-map' },
+      { id: 'vehicle-locations', label: 'Vehicle Locations', icon: 'Navigation', path: '/home?section=vehicle-locations' },
+      { id: 'trip-monitoring', label: 'Trip Monitoring', icon: 'Route', path: '/home?section=trip-monitoring' },
+    ],
+  },
+
+  {
+    id: 'partnership',
+    category: 'Partnership',
+    icon: 'Handshake',
+    items: [
+      { id: 'partners', label: 'Partner Analytics', icon: 'BarChart3', path: '/home?section=partners' },
+      { id: 'fleet-performance', label: 'Fleet Performance', icon: 'BarChart3', path: '/home?section=fleet-performance' },
+      { id: 'utilization', label: 'Fleet Utilization', icon: 'Activity', path: '/home?section=utilization' },
+      { id: 'revenue-insights', label: 'Revenue Insights', icon: 'DollarSign', path: '/home?section=revenue-insights' },
+    ],
+  },
+
+  {
+    id: 'risk',
+    category: 'Risk & Safety',
+    icon: 'ShieldAlert',
+    items: [
+      { id: 'incident-feed', label: 'Incident Feed', icon: 'AlertTriangle', path: '/home?section=incident-feed' },
+      { id: 'risk-alerts', label: 'Risk Alerts', icon: 'Bell', path: '/home?section=risk-alerts' },
+      { id: 'blacklist', label: 'Driver & Owner Blacklist', icon: 'UserX', path: '/home?section=blacklist' },
+    ],
+  },
+
+  {
+    id: 'governance',
+    category: 'Governance',
+    icon: 'Gavel',
+    items: [
+      { id: 'moderation', label: 'Review Moderation', icon: 'Flag', path: '/home?section=moderation' },
+      { id: 'disputes', label: 'Dispute Resolution', icon: 'Scale', path: '/home?section=disputes' },
+    ],
+  },
+
+  {
+    id: 'ai',
+    category: 'AI Intelligence',
+    icon: 'Brain',
+    items: [
+      { id: 'ai-insights', label: 'Platform Insights', icon: 'Brain', path: '/home?section=ai-insights', badge: 'AI', badgeColor: 'purple' },
+      { id: 'risk-predictions', label: 'Risk Predictions', icon: 'TrendingDown', path: '/home?section=risk-predictions' },
+      { id: 'anomalies', label: 'Anomaly Detection', icon: 'Radar', path: '/home?section=anomalies' },
+    ],
+  },
+
+  {
+    id: 'integrations',
+    category: 'Integrations & API',
+    icon: 'Plug',
+    items: [
+      { id: 'api-health', label: 'API Health & Usage', icon: 'Activity', path: '/home?section=api-health' },
+      { id: 'webhooks', label: 'Webhooks', icon: 'Webhook', path: '/home?section=webhooks' },
+      { id: 'integrations', label: '3rd Party Integrations', icon: 'Link', path: '/home?section=integrations' },
+    ],
+  },
+
+  {
+    id: 'data',
+    category: 'Data & Compliance',
+    icon: 'Database',
+    items: [
+      { id: 'data-export', label: 'Bulk Data Export', icon: 'Download', path: '/home?section=data-export' },
+      { id: 'data-import', label: 'Bulk Data Import', icon: 'Upload', path: '/home?section=data-import' },
+      { id: 'compliance', label: 'Compliance Reports', icon: 'FileCheck', path: '/home?section=compliance' },
+    ],
+  },
+],
   super_admin: [
-    {
-      id: 'main',
-      category: 'Main',
-      icon: 'LayoutDashboard',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
-        { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
-      ],
-    },
-    {
-      id: 'governance',
-      category: 'User Governance',
-      icon: 'Shield',
-      items: [
-        { id: 'governance', label: 'User Governance', icon: 'Users', path: '/home?section=governance' },
-        { id: 'user-management', label: 'All Users & Roles', icon: 'UserCog', path: '/home?section=user-management' },
-        { id: 'compliance', label: 'Compliance (DPA/GDPR)', icon: 'FileCheck', path: '/home?section=compliance' },
-      ],
-    },
-    {
-      id: 'system',
-      category: 'System Administration',
-      icon: 'Server',
-      items: [
-        { id: 'audit', label: 'System Audit Log', icon: 'FileSearch', path: '/home?section=audit' },
-        { id: 'settings', label: 'Platform Settings', icon: 'Settings', path: '/home?section=settings' },
-        { id: 'security', label: 'Security Center', icon: 'Lock', path: '/home?section=security' },
-        { id: 'rate-limits', label: 'Rate Limits & Throttling', icon: 'Gauge', path: '/home?section=rate-limits' },
-        { id: 'ai-models', label: 'AI Model Management', icon: 'Brain', path: '/home?section=ai-models' },
-      ],
-    },
-  ],
+  {
+    id: 'main',
+    category: 'Main',
+    icon: 'LayoutDashboard',
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/home' },
+      { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
+    ],
+  },
+
+  {
+    id: 'analytics',
+    category: 'Platform Analytics',
+    icon: 'BarChart3',
+    items: [
+      { id: 'platform-analytics', label: 'Platform Analytics', icon: 'BarChart3', path: '/home?section=platform-analytics' },
+      { id: 'revenue', label: 'Revenue & Billing', icon: 'DollarSign', path: '/home?section=revenue' },
+    ],
+  },
+
+  {
+    id: 'users',
+    category: 'User Management',
+    icon: 'Users',
+    items: [
+      { id: 'user-management', label: 'All Users & Roles', icon: 'UserCog', path: '/home?section=user-management' },
+      { id: 'user-lifecycle', label: 'User Lifecycle', icon: 'Users', path: '/home?section=user-lifecycle' },
+    ],
+  },
+
+  {
+    id: 'risk',
+    category: 'Risk & Monitoring',
+    icon: 'ShieldAlert',
+    items: [
+      { id: 'risk-overview', label: 'Global Risk Overview', icon: 'AlertTriangle', path: '/home?section=risk-overview' },
+    ],
+  },
+
+  {
+    id: 'governance',
+    category: 'Governance',
+    icon: 'Gavel',
+    items: [
+      { id: 'governance', label: 'User Governance', icon: 'Users', path: '/home?section=governance' },
+      { id: 'compliance', label: 'Compliance & Legal', icon: 'FileCheck', path: '/home?section=compliance' },
+      { id: 'data-requests', label: 'Data Requests (GDPR/DPA)', icon: 'ShieldCheck', path: '/home?section=data-requests' },
+    ],
+  },
+
+  {
+    id: 'system',
+    category: 'System Administration',
+    icon: 'Server',
+    items: [
+      { id: 'system-health', label: 'System Health', icon: 'Server', path: '/home?section=system-health' },
+      { id: 'audit', label: 'System Audit Log', icon: 'FileSearch', path: '/home?section=audit' },
+      { id: 'activity', label: 'User Activity Logs', icon: 'Activity', path: '/home?section=activity' },
+      { id: 'settings', label: 'Platform Settings', icon: 'Settings', path: '/home?section=settings' },
+      { id: 'security', label: 'Security Center', icon: 'Lock', path: '/home?section=security' },
+      { id: 'rate-limits', label: 'Rate Limits & Throttling', icon: 'Gauge', path: '/home?section=rate-limits' },
+      { id: 'feature-flags', label: 'Feature Flags', icon: 'ToggleLeft', path: '/home?section=feature-flags' },
+    ],
+  },
+
+  {
+    id: 'ai',
+    category: 'AI Governance',
+    icon: 'Brain',
+    items: [
+      { id: 'ai-models', label: 'AI Model Management', icon: 'Brain', path: '/home?section=ai-models' },
+      { id: 'ai-governance', label: 'AI Governance', icon: 'Shield', path: '/home?section=ai-governance' },
+    ],
+  },
+
+  {
+    id: 'communication',
+    category: 'Communication',
+    icon: 'Megaphone',
+    items: [
+      { id: 'announcements', label: 'Announcements', icon: 'Megaphone', path: '/home?section=announcements' },
+    ],
+  },
+],
 };
 
 // Role labels for display
