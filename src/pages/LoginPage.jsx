@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { defaultUsers, getDefaultUserByCredentials } from '@/auth/defaultUsers'
+import { loginUser } from '@/services/authService'
+import { validateLogin } from '@/services/validationService'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const palette = {
   bg: 'var(--color-bg-main)',
   card: 'var(--color-bg-card)',
@@ -21,24 +21,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [authError, setAuthError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const errors = useMemo(() => {
-    const nextErrors = {}
-
-    if (!form.email.trim()) {
-      nextErrors.email = 'Email is required.'
-    } else if (!EMAIL_REGEX.test(form.email)) {
-      nextErrors.email = 'Please enter a valid email address.'
-    }
-
-    if (!form.password) {
-      nextErrors.password = 'Password is required.'
-    } else if (form.password.length < 8) {
-      nextErrors.password = 'Password must be at least 8 characters.'
-    }
-
-    return nextErrors
-  }, [form])
+  const errors = useMemo(() => validateLogin(form), [form])
 
   const isFormValid = Object.keys(errors).length === 0
 
@@ -50,32 +35,27 @@ export default function LoginPage() {
     }))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitted(true)
     setAuthError('')
 
     if (!isFormValid) return
 
-    const matchedUser = getDefaultUserByCredentials(form.email, form.password)
-    if (!matchedUser) {
-      setAuthError('Invalid credentials. Use one of the default users below.')
-      return
+    setLoading(true)
+    try {
+      var response = await loginUser({ email: form.email, password: form.password })
+      var info = await response.json();
+      if (response.ok) {
+        navigate('/home')
+      } else {
+        setAuthError(info.message || 'Login failed. Please try again.')
+      }
+    } catch (error) {
+      setAuthError(error.message || 'Login failed. Please try again.')
+    } finally {
+      setLoading(false)
     }
-
-    // Temporary user session until backend auth is wired.
-    localStorage.setItem('trustdrive-user-role', matchedUser.role)
-    localStorage.setItem(
-      'trustdrive-auth-user',
-      JSON.stringify({
-        id: matchedUser.id,
-        name: matchedUser.name,
-        email: matchedUser.email,
-        role: matchedUser.role,
-        links: matchedUser.links,
-      })
-    )
-    navigate('/home')
   }
 
   return (
@@ -252,10 +232,11 @@ export default function LoginPage() {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="group inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 style={{ backgroundColor: palette.primary }}
               >
-                Sign in securely
+                {loading ? 'Signing in...' : 'Sign in securely'}
                 <svg className="h-4 w-4 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -267,38 +248,6 @@ export default function LoginPage() {
                 </p>
               )}
             </form>
-
-            <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: palette.border, backgroundColor: 'rgba(148, 163, 184, 0.08)' }}>
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: palette.primary }}>
-                Default demo users
-              </p>
-              <p className="mt-1 text-xs" style={{ color: palette.textSecondary }}>
-                Use these accounts to test role-based access links.
-              </p>
-
-              <div className="mt-3 space-y-2">
-                {defaultUsers.map((user) => (
-                  <button
-                    key={user.id}
-                    type="button"
-                    onClick={() => {
-                      setForm((prev) => ({
-                        ...prev,
-                        email: user.email,
-                        password: user.password,
-                        role: user.role,
-                      }))
-                      setAuthError('')
-                    }}
-                    className="w-full rounded-xl border px-3 py-2 text-left text-xs transition hover:opacity-90"
-                    style={{ borderColor: palette.border, backgroundColor: palette.card, color: palette.text }}
-                  >
-                    <span className="font-semibold">{user.name}</span>
-                    <span style={{ color: palette.textSecondary }}> • {user.email} • {user.role}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             <div className="my-6 flex items-center gap-3">
               <div className="h-px flex-1" style={{ backgroundColor: palette.border }} />

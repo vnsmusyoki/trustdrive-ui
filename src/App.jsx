@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import GuestLayout from './layouts/GuestLayout'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -13,6 +14,8 @@ import AppLayout from '@/layouts/AppLayout'
 
 function App() { 
   return (
+    <>
+    <Toaster position="top-right" toastOptions={{ duration: 5000 }} />
     <BrowserRouter>
       <Routes>
         <Route element={<GuestLayout />}>
@@ -44,6 +47,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </>
   )
 }
 
