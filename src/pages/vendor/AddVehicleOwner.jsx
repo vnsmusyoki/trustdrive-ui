@@ -5,6 +5,11 @@ import {
   Shield, FileText, Building, CreditCard, User, Phone, Mail,
   MapPin, Briefcase, Upload, Award, Clock, Star, AlertCircle
 } from 'lucide-react';
+import {
+  validateVehicleOwnerStep1,
+  validateVehicleOwnerStep2,
+  validateVehicleOwnerStep3,
+} from '@/services/vehicleOwnerValidationService';
 
 const palette = {
   bg: 'var(--color-bg-main)',
@@ -17,7 +22,7 @@ const palette = {
   success: 'var(--color-status-success)',
   warning: 'var(--color-status-warning)',
   danger: 'var(--color-status-danger)',
-  accent: '#7C3AED',
+  accent: 'var(--color-accent-purple)',
 };
 
 const STEPS = [
@@ -262,56 +267,19 @@ export default function AddVehicleOwner() {
   };
 
   const validateStep1 = () => {
-    const newErrors = {};
-    if (ownerType === 'individual') {
-      if (!personalInfo.fullName) newErrors.fullName = 'Full name is required';
-      if (!personalInfo.phone) newErrors.phone = 'Phone number is required';
-      if (!personalInfo.email) newErrors.email = 'Email is required';
-      if (personalInfo.phone && !/^\+?[0-9]{10,15}$/.test(personalInfo.phone)) {
-        newErrors.phone = 'Enter a valid phone number (e.g., +2547XXXXXXXX)';
-      }
-      if (personalInfo.email && !/\S+@\S+\.\S+/.test(personalInfo.email)) {
-        newErrors.email = 'Enter a valid email address';
-      }
-      if (!personalInfo.nationalId) newErrors.nationalId = 'National ID is required';
-    } else {
-      if (!companyInfo.companyName) newErrors.companyName = 'Company name is required';
-      if (!companyInfo.registrationNumber) newErrors.registrationNumber = 'Registration number is required';
-      if (!companyInfo.contactPersonName) newErrors.contactPersonName = 'Contact person name is required';
-      if (!companyInfo.contactPersonPhone) newErrors.contactPersonPhone = 'Contact person phone is required';
-      if (!companyInfo.contactPersonEmail) newErrors.contactPersonEmail = 'Contact person email is required';
-      if (companyInfo.contactPersonPhone && !/^\+?[0-9]{10,15}$/.test(companyInfo.contactPersonPhone)) {
-        newErrors.contactPersonPhone = 'Enter a valid phone number';
-      }
-      if (companyInfo.contactPersonEmail && !/\S+@\S+\.\S+/.test(companyInfo.contactPersonEmail)) {
-        newErrors.contactPersonEmail = 'Enter a valid email address';
-      }
-    }
+    const newErrors = validateVehicleOwnerStep1(ownerType, personalInfo, companyInfo);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateStep2 = () => {
-    const newErrors = {};
-    if (businessDetails.businessType !== 'individual') {
-      if (!businessDetails.businessName) newErrors.businessName = 'Business name is required';
-      if (!businessDetails.businessRegNumber) newErrors.businessRegNumber = 'Business registration number is required';
-    }
-    if (businessDetails.fleetSize && businessDetails.fleetSize < 0) {
-      newErrors.fleetSize = 'Fleet size must be 0 or greater';
-    }
+    const newErrors = validateVehicleOwnerStep2(ownerType, businessDetails);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateStep3 = () => {
-    const newErrors = {};
-    if (!verificationDetails.termsAccepted) {
-      newErrors.termsAccepted = 'You must accept the Terms of Service';
-    }
-    if (!verificationDetails.dataProcessingConsent) {
-      newErrors.dataProcessingConsent = 'You must consent to data processing under the Data Protection Act';
-    }
+    const newErrors = validateVehicleOwnerStep3(verificationDetails);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

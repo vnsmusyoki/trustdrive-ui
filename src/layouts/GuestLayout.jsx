@@ -59,8 +59,8 @@ export default function GuestLayout() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2.5 group">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#2563EB] to-[#7C3AED] rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition"></div>
-                <div className="relative w-9 h-9 bg-gradient-to-br from-[#2563EB] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#4F46E5] to-[#8B5CF6] rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition"></div>
+                <div className="relative w-9 h-9 bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
@@ -69,7 +69,7 @@ export default function GuestLayout() {
               <div className="flex flex-col">
                 <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>
                   <span>Drive</span>
-                  <span className="bg-gradient-to-r from-[#2563EB] to-[#7C3AED] bg-clip-text text-transparent">Trust</span>
+                  <span className="bg-gradient-to-r from-[#4F46E5] to-[#8B5CF6] bg-clip-text text-transparent">Trust</span>
                 </span>
                 <span className="text-[10px] tracking-wide -mt-1" style={{ color: 'var(--color-text-secondary)' }}>Reputation Intelligence</span>
               </div>
@@ -107,7 +107,7 @@ export default function GuestLayout() {
                 className={`text-white px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
                   isAuthRoute
                     ? 'hover:opacity-90'
-                    : 'bg-gradient-to-r from-[#2563EB] to-[#1E40AF] hover:shadow-lg hover:shadow-blue-500/25'
+                    : 'bg-gradient-to-r from-[#4F46E5] to-[#3730A3] hover:shadow-lg hover:shadow-blue-500/25'
                 }`}
                 style={isAuthRoute ? { backgroundColor: 'var(--color-primary-main)' } : {}}
               >
@@ -191,7 +191,7 @@ export default function GuestLayout() {
                   to="/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`mx-4 my-2 text-white text-center py-3 rounded-xl font-semibold ${
-                    isAuthRoute ? '' : 'bg-gradient-to-r from-[#2563EB] to-[#1E40AF]'
+                    isAuthRoute ? '' : 'bg-gradient-to-r from-[#4F46E5] to-[#3730A3]'
                   }`}
                   style={isAuthRoute ? { backgroundColor: 'var(--color-primary-main)' } : {}}
                 >
@@ -242,7 +242,7 @@ export default function GuestLayout() {
             {/* Brand Column */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 bg-gradient-to-br from-[#2563EB] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-9 h-9 bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>

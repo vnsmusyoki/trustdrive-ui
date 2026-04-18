@@ -62,8 +62,8 @@ export default function HomePage() {
       >
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#2563EB] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#7C3AED] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#4F46E5] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#8B5CF6] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#10B981] rounded-full mix-blend-multiply filter blur-3xl opacity-5 animate-blob animation-delay-4000"></div>
         </div>
 
@@ -82,7 +82,7 @@ export default function HomePage() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
               </span>
               <span style={{ color: 'var(--color-text-primary)' }}>✨ Now Live —</span>
-              <span className="bg-gradient-to-r from-[#2563EB] to-[#7C3AED] bg-clip-text text-transparent font-semibold">
+              <span className="bg-gradient-to-r from-[#4F46E5] to-[#8B5CF6] bg-clip-text text-transparent font-semibold">
                 Neutral Reputation Intelligence
               </span>
             </div>
@@ -93,7 +93,7 @@ export default function HomePage() {
               style={{ color: 'var(--color-text-primary)' }}
             >
               Trust Without{' '}
-              <span className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#4F46E5] via-[#4F46E5] to-[#8B5CF6] bg-clip-text text-transparent">
                 Boundaries
               </span>
             </h1>
@@ -109,14 +109,14 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap justify-center gap-4 animate-fadeInUp animation-delay-300">
-              <button className="group relative bg-gradient-to-r from-[#2563EB] to-[#1E40AF] text-white px-8 py-3.5 rounded-full font-semibold shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
+              <button className="group relative bg-gradient-to-r from-[#4F46E5] to-[#3730A3] text-white px-8 py-3.5 rounded-full font-semibold shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
                 <span className="relative z-10 flex items-center gap-2">
                   Get Started Free
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#6366F1] to-[#4F46E5] opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </button>
               <button
                 className="px-8 py-3.5 rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5 border-2"
@@ -170,7 +170,7 @@ export default function HomePage() {
                   borderColor: 'var(--color-bg-border)',
                 }}
               >
-                <div className="text-4xl font-bold bg-gradient-to-r from-[#2563EB] to-[#7C3AED] bg-clip-text text-transparent">
+                <div className="text-4xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#8B5CF6] bg-clip-text text-transparent">
                   {Math.round(stat.value)}{stat.suffix}
                 </div>
                 <div className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
@@ -193,11 +193,11 @@ export default function HomePage() {
                 onMouseEnter={() => setHoveredFeature(idx)}
                 onMouseLeave={() => setHoveredFeature(null)}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-[#2563EB]/0 to-[#7C3AED]/0 group-hover:from-[#2563EB]/5 group-hover:to-[#7C3AED]/5 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-[#4F46E5]/0 to-[#8B5CF6]/0 group-hover:from-[#4F46E5]/5 group-hover:to-[#8B5CF6]/5 transition-all duration-500"></div>
                 <div className="relative">
                   <div
                     className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                      hoveredFeature === idx ? 'bg-gradient-to-br from-[#2563EB] to-[#7C3AED] shadow-lg scale-110' : ''
+                      hoveredFeature === idx ? 'bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] shadow-lg scale-110' : ''
                     }`}
                     style={hoveredFeature !== idx ? { backgroundColor: 'var(--color-bg-border)' } : {}}
                   >
@@ -239,7 +239,7 @@ export default function HomePage() {
               <span>⚡ Simple Process</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-              Your Reputation. <span className="text-[#2563EB]">Portable.</span>
+              Your Reputation. <span className="text-[#4F46E5]">Portable.</span>
             </h2>
             <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
               DriveTrust lets you export your Uber/Bolt rating history and build a verified profile
@@ -248,12 +248,12 @@ export default function HomePage() {
           </div>
 
           <div className="relative">
-            <div className="hidden md:block absolute left-[12.5%] right-[12.5%] top-8 h-0.5 bg-gradient-to-r from-[#2563EB] to-[#7C3AED] z-0"></div>
+            <div className="hidden md:block absolute left-[12.5%] right-[12.5%] top-8 h-0.5 bg-gradient-to-r from-[#4F46E5] to-[#8B5CF6] z-0"></div>
 
             <div className="grid md:grid-cols-4 gap-8 relative z-10">
               {steps.map((step, idx) => (
                 <div key={idx} className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-[#2563EB] to-[#7C3AED] text-white rounded-2xl flex items-center justify-center text-2xl font-bold shadow-lg">
+                  <div className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] text-white rounded-2xl flex items-center justify-center text-2xl font-bold shadow-lg">
                     {idx + 1}
                   </div>
                   <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text-primary)' }}>
@@ -383,7 +383,7 @@ export default function HomePage() {
                   "{testimonial.quote}"
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] flex items-center justify-center text-white font-semibold">
                     {testimonial.name.charAt(0)}
                   </div>
                   <div>
@@ -438,12 +438,12 @@ export default function HomePage() {
                 }`}
                 style={{
                   backgroundColor: 'var(--color-bg-card)',
-                  borderColor: plan.popular ? '#2563EB' : 'var(--color-bg-border)',
+                  borderColor: plan.popular ? '#4F46E5' : 'var(--color-bg-border)',
                 }}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-[#2563EB] to-[#7C3AED] text-white text-xs px-3 py-1 rounded-full font-semibold">
+                    <span className="bg-gradient-to-r from-[#4F46E5] to-[#8B5CF6] text-white text-xs px-3 py-1 rounded-full font-semibold">
                       Most Popular
                     </span>
                   </div>
@@ -499,7 +499,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2563EB] via-[#1E40AF] to-[#1E3A5F]"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#4F46E5] via-[#3730A3] to-[#1E3A5F]"></div>
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-transparent"></div>
         </div>
@@ -510,7 +510,7 @@ export default function HomePage() {
             Join thousands of drivers and owners who are making informed decisions every day.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <button className="group bg-white text-[#2563EB] px-8 py-3.5 rounded-full font-bold hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+            <button className="group bg-white text-[#4F46E5] px-8 py-3.5 rounded-full font-bold hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
               <span className="flex items-center gap-2">
                 Get Started Now
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -13,7 +13,7 @@ const palette = {
   success: 'var(--color-status-success)',
   warning: 'var(--color-status-warning)',
   danger: 'var(--color-status-danger)',
-  accent: '#7C3AED',
+  accent: 'var(--color-accent-purple)',
 };
 
 const STEPS = [
