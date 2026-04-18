@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginUser } from '@/services/authService'
 import { validateLogin } from '@/services/validationService'
+import useAuthStore from '@/stores/useAuthStore'
 
 const palette = {
   bg: 'var(--color-bg-main)',
@@ -17,7 +18,8 @@ const palette = {
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '', remember: true, role: 'driver' })
+  const setUser = useAuthStore((s) => s.setUser)
+  const [form, setForm] = useState({ email: '', password: '', remember: true })
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [authError, setAuthError] = useState('')
@@ -44,12 +46,12 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      var response = await loginUser({ email: form.email, password: form.password })
-      var info = await response.json();
-      if (response.ok) {
+      const { status, data } = await loginUser({ email: form.email, password: form.password })
+      if (status === 200) {
+        setUser(data)
         navigate('/home')
-      } else {
-        setAuthError(info.message || 'Login failed. Please try again.')
+      }else{
+        setAuthError(data?.message || 'Login failed. Please try again later.')
       }
     } catch (error) {
       setAuthError(error.message || 'Login failed. Please try again.')
@@ -124,6 +126,15 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
+              {authError && (
+                <div
+                  className="rounded-xl border px-3 py-2 text-xs font-medium"
+                  style={{ color: palette.danger, borderColor: palette.danger, backgroundColor: `${palette.danger}08` }}
+                >
+                  {authError}
+                </div>
+              )}
+
               <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>
                   Work Email
@@ -207,29 +218,6 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <div>
-                <label htmlFor="role" className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>
-                  Sign in as
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  value={form.role}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
-                  style={{
-                    backgroundColor: palette.card,
-                    borderColor: palette.border,
-                    color: palette.text,
-                  }}
-                >
-                  <option value="driver">Driver</option>
-                  <option value="owner">Owner</option>
-                  <option value="platform">Platform</option>
-                  <option value="super_admin">Super Admin</option>
-                </select>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -241,12 +229,6 @@ export default function LoginPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </button>
-
-              {authError && (
-                <p className="rounded-xl border px-3 py-2 text-xs font-medium" style={{ color: palette.danger, borderColor: palette.danger }}>
-                  {authError}
-                </p>
-              )}
             </form>
 
             <div className="my-6 flex items-center gap-3">

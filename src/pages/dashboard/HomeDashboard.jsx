@@ -1,15 +1,16 @@
-import { Navigate, useOutletContext } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import DriverDashboard from './DriverDashboard'
 import OwnerDashboard from './OwnerDashboard'
 import PlatformDashboard from './PlatformDashboard'
+import useAuthStore from '@/stores/useAuthStore'
 
 export default function HomeDashboard() {
-  const context = useOutletContext() || {}
-  const role = context.role || localStorage.getItem('trustdrive-user-role')
+  const user = useAuthStore((s) => s.user)
+  const role = user?.roles?.[0]
 
-  if (role === 'driver') return <DriverDashboard />
-  if (role === 'owner') return <OwnerDashboard />
-  if (role === 'platform') return <PlatformDashboard />
+  if (role === 'Driver') return <DriverDashboard />
+  if (role === 'CarOwner') return <OwnerDashboard />
+  if (role === 'Vendor') return <PlatformDashboard />
 
   return <Navigate to="/login" replace />
 }

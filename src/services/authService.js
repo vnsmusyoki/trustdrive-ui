@@ -1,7 +1,7 @@
 import api from '@/lib/api'
 
 export const loginUser = (payload) =>
-  api.post('/Auth/login', payload).then((res) => res.data)
+  api.post('/Auth/login', payload).then((res) => ({ status: res.status, data: res.data }))
 
 export const registerDriver = (payload) =>
   api.post('/Auth/register-driver', payload).then((res) => res.data)

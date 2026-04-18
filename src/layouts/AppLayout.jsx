@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import * as Icons from 'lucide-react';
+import useAuthStore from '@/stores/useAuthStore';
 
 // -----------------------------------------------------------------------------
 // Role-based menu configuration (fully scoped to DriveTrust proposal)
 // -----------------------------------------------------------------------------
 const roleMenus = { 
-  driver: [
+  Driver: [
     {
       id: 'main',
       category: 'Main',
@@ -96,7 +97,7 @@ const roleMenus = {
   ],
 
 
-   owner: [
+   CarOwner: [
   {
     id: 'main',
     category: 'Main',
@@ -207,7 +208,7 @@ const roleMenus = {
     },
   ],
 
-  platform: [
+  Vendor: [
   {
     id: 'main',
     category: 'Main',
@@ -295,7 +296,7 @@ const roleMenus = {
     ],
   },
 ],
-  super_admin: [
+  SuperAdmin: [
   {
     id: 'main',
     category: 'Main',
@@ -550,19 +551,15 @@ export default function AppLayout() {
     return pref;
   });
 
-  // Get user role from localStorage (in real app, this would come from auth context)
-  const [role] = useState(() => localStorage.getItem('trustdrive-user-role') || 'driver');
-  const [user] = useState(() => {
-    try {
-      const raw = localStorage.getItem('trustdrive-auth-user');
-      return raw ? JSON.parse(raw) : { name: 'John Driver', email: 'john@example.com' };
-    } catch {
-      return { name: 'User', email: 'user@drivetrust.com' };
-    }
-  });
+  const authUser = useAuthStore((s) => s.user);
+  const clearUser = useAuthStore((s) => s.clearUser);
+  const role = authUser?.roles?.[0] || 'Driver';
+  const user = authUser
+    ? { name: `${authUser.firstName} ${authUser.lastName}`, email: authUser.email }
+    : { name: 'User', email: '' };
 
   // Get current menus based on role
-  const menus = roleMenus[role] || roleMenus.driver;
+  const menus = roleMenus[role] || roleMenus.Driver;
 
   // Filter menus based on search
   const filteredMenus = useMemo(() => {
@@ -614,8 +611,7 @@ export default function AppLayout() {
 
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem('trustdrive-user-role');
-    localStorage.removeItem('trustdrive-auth-user');
+    clearUser();
     window.location.href = '/login';
   };
 
