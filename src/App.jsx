@@ -16,6 +16,11 @@ import AppLayout from '@/layouts/AppLayout'
 import FleetManagement from '@/pages/carowner/FleetManagement'
 import AddVehicleToFleet from '@/pages/carowner/AddVehicleToFleet'
 
+
+// vendor pages
+import VehicleOwners from '@/pages/vendor/VehicleOwners'
+import AddVehicleOwner from '@/pages/vendor/AddVehicleOwner'
+
 function App() { 
   return (
     <>
@@ -48,8 +53,10 @@ function App() {
             <Route path="/fleet-management/add" element={<AddVehicleToFleet />} />
         </Route>
 
-        <Route element={<AppLayout />} requiredRole={["platform"]}>
+        <Route element={<AppLayout />} requiredRole={["Vendor"]}>
             {/* platform related links */}
+            <Route  path='vehicle-owners' element={<VehicleOwners />} />
+            <Route  path='vehicle-owners/add' element={<AddVehicleOwner />} />
         </Route>
       </Routes>
     </BrowserRouter>

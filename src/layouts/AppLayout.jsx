@@ -215,7 +215,18 @@ const roleMenus = {
       { id: 'overview', label: 'Overview', icon: 'Activity', path: '/home?section=overview' },
     ],
   },
-
+  {
+    id: 'vehicle-owners',
+    category: 'Vehicle Owners',
+    icon: 'Car',
+    items: [
+      { id: 'all-owners', label: 'All Vehicle Owners', icon: 'Users', path: '/vehicle-owners' },
+      { id: 'owner-verification', label: 'Owner Verification', icon: 'BadgeCheck', path: '/home?section=owner-verification' },
+      { id: 'owner-performance', label: 'Owner Performance', icon: 'TrendingUp', path: '/home?section=owner-performance' },
+      { id: 'owner-payouts', label: 'Owner Payouts', icon: 'CreditCard', path: '/home?section=owner-payouts' },
+      { id: 'owner-disputes', label: 'Owner Disputes', icon: 'Scale', path: '/home?section=owner-disputes' },
+    ],
+  },
   {
     id: 'tracking',
     category: 'Tracking & Operations',
