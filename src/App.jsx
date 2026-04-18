@@ -12,6 +12,10 @@ import SetNewPasswordPage from './pages/SetNewPasswordPage'
 import Dashboard from '@/pages/dashboard/Dashboard'
 import AppLayout from '@/layouts/AppLayout'
 
+// car owner pages
+import FleetManagement from '@/pages/carowner/FleetManagement'
+import AddVehicleToFleet from '@/pages/carowner/AddVehicleToFleet'
+
 function App() { 
   return (
     <>
@@ -38,8 +42,10 @@ function App() {
            {/* driver related links */}
         </Route>
 
-        <Route element={<AppLayout />} requiredRole={["owner"]}>
+        <Route element={<AppLayout />} requiredRole={["CarOwner"]}>
             {/* owner related links */}
+            <Route path="/fleet-management" element={<FleetManagement />} />
+            <Route path="/fleet-management/add" element={<AddVehicleToFleet />} />
         </Route>
 
         <Route element={<AppLayout />} requiredRole={["platform"]}>

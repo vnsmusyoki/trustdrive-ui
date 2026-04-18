@@ -108,7 +108,16 @@ const roleMenus = {
       { id: 'alerts', label: 'Risk Alerts', icon: 'Bell', path: '/home?section=alerts' },
     ],
   },
-
+  {
+    id: 'fleet',
+    category: 'Fleet & Operations',
+    icon: 'Truck',
+    items: [
+      { id: 'my-fleet', label: 'My Fleet', icon: 'Car', path: '/fleet-management' },
+      { id: 'maintenance', label: 'Maintenance Tracker', icon: 'Wrench', path: '/home?section=maintenance' },
+      { id: 'utilization', label: 'Vehicle Utilization', icon: 'Activity', path: '/home?section=utilization' },
+    ],
+  },
   {
     id: 'driver-management',
     category: 'Driver Management',
@@ -121,18 +130,6 @@ const roleMenus = {
       { id: 'driver-performance', label: 'Driver Performance', icon: 'BarChart3', path: '/home?section=driver-performance' },
     ],
   },
-
-  {
-    id: 'fleet',
-    category: 'Fleet & Operations',
-    icon: 'Truck',
-    items: [
-      { id: 'my-fleet', label: 'My Fleet', icon: 'Car', path: '/home?section=fleet' },
-      { id: 'maintenance', label: 'Maintenance Tracker', icon: 'Wrench', path: '/home?section=maintenance' },
-      { id: 'utilization', label: 'Vehicle Utilization', icon: 'Activity', path: '/home?section=utilization' },
-    ],
-  },
-
   {
     id: 'financial',
     category: 'Financial',
