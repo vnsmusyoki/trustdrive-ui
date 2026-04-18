@@ -1,8 +1,18 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Select from 'react-select'
+import toast from 'react-hot-toast'
+import { Eye, EyeOff, AlertCircle, X } from 'lucide-react'
+import { registerDriver } from '@/services/authService'
+import { validateRegisterDriver } from '@/services/validationService'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const PHONE_REGEX = /^\+?[0-9\s-]{8,}$/
+const KENYA_CITIES = [
+  { value: 'Nairobi', label: 'Nairobi' },
+  { value: 'Mombasa', label: 'Mombasa' },
+  { value: 'Kisumu', label: 'Kisumu' },
+  { value: 'Nakuru', label: 'Nakuru' },
+  { value: 'Eldoret', label: 'Eldoret' },
+]
 
 const palette = {
   bg: 'var(--color-bg-main)',
@@ -19,44 +29,81 @@ const palette = {
 export default function RegisterDriverPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: '',
-    licenseNumber: '',
-    city: '',
+    phoneNumber: '',
+    operatingCity: '',
+    address: '',
     password: '',
     confirmPassword: '',
     consent: false,
   })
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [apiErrors, setApiErrors] = useState({})
+  const [authError, setAuthError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const errors = useMemo(() => {
-    const nextErrors = {}
-    if (!form.fullName.trim()) nextErrors.fullName = 'Full name is required.'
-    if (!EMAIL_REGEX.test(form.email)) nextErrors.email = 'Enter a valid email address.'
-    if (!PHONE_REGEX.test(form.phone)) nextErrors.phone = 'Enter a valid phone number.'
-    if (!form.licenseNumber.trim()) nextErrors.licenseNumber = 'License number is required.'
-    if (!form.city.trim()) nextErrors.city = 'City is required.'
-    if (form.password.length < 8) nextErrors.password = 'Password must be at least 8 characters.'
-    if (form.confirmPassword !== form.password) nextErrors.confirmPassword = 'Passwords do not match.'
-    if (!form.consent) nextErrors.consent = 'You must accept verification consent.'
-    return nextErrors
+    const v = validateRegisterDriver(form)
+    if (!form.consent) v.consent = 'You must accept verification consent.'
+    return v
   }, [form])
-
-  const isValid = Object.keys(errors).length === 0
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    if (apiErrors[name]) setApiErrors((prev) => ({ ...prev, [name]: undefined }))
   }
 
-  const handleSubmit = (event) => {
+  const handlePhoneChange = (event) => {
+    let digits = event.target.value.replace(/\D/g, '')
+    if (digits.length > 0 && digits[0] !== '0') digits = '0' + digits
+    if (digits.length > 10) digits = digits.slice(0, 10)
+    setForm((prev) => ({ ...prev, phoneNumber: digits }))
+    if (apiErrors.phoneNumber) setApiErrors((prev) => ({ ...prev, phoneNumber: undefined }))
+  }
+
+  const handleCityChange = (option) => {
+    setForm((prev) => ({ ...prev, operatingCity: option ? option.value : '' }))
+    if (apiErrors.operatingCity) setApiErrors((prev) => ({ ...prev, operatingCity: undefined }))
+  }
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitted(true)
-    if (!isValid) return
-    localStorage.setItem('trustdrive-user-role', 'driver')
-    navigate('/home')
+    setAuthError('')
+    setApiErrors({})
+
+    if (Object.keys(errors).length > 0) return
+
+    setLoading(true)
+    try {
+      const data = await registerDriver({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        phoneNumber: form.phoneNumber,
+        operatingCity: form.operatingCity,
+        address: form.address,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      })
+      toast.success(data.message || 'Registration successful!')
+      navigate('/login')
+    } catch (error) {
+      if (error.errors) {
+        setApiErrors(error.errors)
+      }
+      setAuthError(error.message || 'Registration failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
+
+  const getError = (field) => (submitted && errors[field]) || apiErrors[field]
 
   return (
     <section className="px-4 py-10 sm:px-6 md:py-14 lg:px-8" style={{ backgroundColor: palette.bg }}>
@@ -124,21 +171,67 @@ export default function RegisterDriverPage() {
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              {(authError || Object.keys(apiErrors).filter((k) => apiErrors[k]).length > 0) && (
+                <div
+                  className="relative rounded-xl border p-4"
+                  style={{ borderColor: palette.danger, backgroundColor: `${palette.danger}08` }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => { setAuthError(''); setApiErrors({}) }}
+                    className="absolute right-3 top-3 rounded-full p-0.5 transition hover:opacity-70"
+                    style={{ color: palette.danger }}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: palette.danger }} />
+                    <div className="space-y-1">
+                      {authError && (
+                        <p className="text-sm font-medium" style={{ color: palette.danger }}>{authError}</p>
+                      )}
+                      {Object.entries(apiErrors)
+                        .filter(([, v]) => v)
+                        .map(([field, msg]) => (
+                          <p key={field} className="text-xs" style={{ color: palette.danger }}>
+                            <span className="font-medium capitalize">{field.replace(/([A-Z])/g, ' $1').trim()}</span>: {msg}
+                          </p>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-4 grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Full name</label>
+                  <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>First name</label>
                   <input
-                    name="fullName"
-                    value={form.fullName}
+                    name="firstName"
+                    value={form.firstName}
                     onChange={handleChange}
                     className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                     style={{
                       backgroundColor: palette.card,
-                      borderColor: submitted && errors.fullName ? palette.danger : palette.border,
+                      borderColor: getError('firstName') ? palette.danger : palette.border,
                       color: palette.text,
                     }}
                   />
-                  {submitted && errors.fullName && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.fullName}</p>}
+                  {getError('firstName') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('firstName')}</p>}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Last name</label>
+                  <input
+                    name="lastName"
+                    value={form.lastName}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
+                    style={{
+                      backgroundColor: palette.card,
+                      borderColor: getError('lastName') ? palette.danger : palette.border,
+                      color: palette.text,
+                    }}
+                  />
+                  {getError('lastName') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('lastName')}</p>}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Email</label>
@@ -150,92 +243,143 @@ export default function RegisterDriverPage() {
                     className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                     style={{
                       backgroundColor: palette.card,
-                      borderColor: submitted && errors.email ? palette.danger : palette.border,
+                      borderColor: getError('email') ? palette.danger : palette.border,
                       color: palette.text,
                     }}
                   />
-                  {submitted && errors.email && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.email}</p>}
+                  {getError('email') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('email')}</p>}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Phone</label>
-                  <input
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
-                    style={{
-                      backgroundColor: palette.card,
-                      borderColor: submitted && errors.phone ? palette.danger : palette.border,
-                      color: palette.text,
-                    }}
-                  />
-                  {submitted && errors.phone && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.phone}</p>}
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>License number</label>
-                  <input
-                    name="licenseNumber"
-                    value={form.licenseNumber}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
-                    style={{
-                      backgroundColor: palette.card,
-                      borderColor: submitted && errors.licenseNumber ? palette.danger : palette.border,
-                      color: palette.text,
-                    }}
-                  />
-                  {submitted && errors.licenseNumber && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.licenseNumber}</p>}
+                  <div className="relative">
+                    <input
+                      name="phoneNumber"
+                      value={form.phoneNumber}
+                      onChange={handlePhoneChange}
+                      placeholder="0712345678"
+                      maxLength={10}
+                      className="w-full rounded-xl border px-4 py-3 pr-14 text-sm outline-none transition focus:ring-2"
+                      style={{
+                        backgroundColor: palette.card,
+                        borderColor: getError('phoneNumber') ? palette.danger : palette.border,
+                        color: palette.text,
+                      }}
+                    />
+                    <span
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium tabular-nums"
+                      style={{ color: form.phoneNumber.length === 10 ? palette.success : palette.textSecondary }}
+                    >
+                      {form.phoneNumber.length}/10
+                    </span>
+                  </div>
+                  {getError('phoneNumber') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('phoneNumber')}</p>}
                 </div>
               </div>
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Operating city</label>
+                <Select
+                  options={KENYA_CITIES}
+                  value={KENYA_CITIES.find((c) => c.value === form.operatingCity) || null}
+                  onChange={handleCityChange}
+                  placeholder="Select a city..."
+                  isClearable
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      backgroundColor: palette.card,
+                      borderColor: getError('operatingCity') ? palette.danger : palette.border,
+                      borderRadius: '0.75rem',
+                      padding: '0.25rem 0.25rem',
+                      fontSize: '0.875rem',
+                      boxShadow: state.isFocused ? `0 0 0 2px ${palette.primary}40` : 'none',
+                      '&:hover': { borderColor: palette.primary },
+                    }),
+                    singleValue: (base) => ({ ...base, color: palette.text }),
+                    menu: (base) => ({ ...base, backgroundColor: palette.card, borderRadius: '0.75rem', border: `1px solid ${palette.border}` }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isSelected ? palette.primary : state.isFocused ? `${palette.primary}15` : 'transparent',
+                      color: state.isSelected ? '#fff' : palette.text,
+                      fontSize: '0.875rem',
+                    }),
+                    placeholder: (base) => ({ ...base, color: palette.textSecondary }),
+                    input: (base) => ({ ...base, color: palette.text }),
+                  }}
+                />
+                {getError('operatingCity') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('operatingCity')}</p>}
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Address</label>
                 <input
-                  name="city"
-                  value={form.city}
+                  name="address"
+                  value={form.address}
                   onChange={handleChange}
                   className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                   style={{
                     backgroundColor: palette.card,
-                    borderColor: submitted && errors.city ? palette.danger : palette.border,
+                    borderColor: getError('address') ? palette.danger : palette.border,
                     color: palette.text,
                   }}
                 />
-                {submitted && errors.city && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.city}</p>}
+                {getError('address') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('address')}</p>}
               </div>
 
               <div className="grid gap-4 grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
-                    style={{
-                      backgroundColor: palette.card,
-                      borderColor: submitted && errors.password ? palette.danger : palette.border,
-                      color: palette.text,
-                    }}
-                  />
-                  {submitted && errors.password && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.password}</p>}
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border px-4 py-3 pr-10 text-sm outline-none transition focus:ring-2"
+                      style={{
+                        backgroundColor: palette.card,
+                        borderColor: getError('password') ? palette.danger : palette.border,
+                        color: palette.text,
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5"
+                      style={{ color: palette.textSecondary }}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {getError('password') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('password')}</p>}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Confirm password</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={form.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
-                    style={{
-                      backgroundColor: palette.card,
-                      borderColor: submitted && errors.confirmPassword ? palette.danger : palette.border,
-                      color: palette.text,
-                    }}
-                  />
-                  {submitted && errors.confirmPassword && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.confirmPassword}</p>}
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={form.confirmPassword}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border px-4 py-3 pr-10 text-sm outline-none transition focus:ring-2"
+                      style={{
+                        backgroundColor: palette.card,
+                        borderColor: getError('confirmPassword') ? palette.danger : palette.border,
+                        color: palette.text,
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5"
+                      style={{ color: palette.textSecondary }}
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {getError('confirmPassword') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('confirmPassword')}</p>}
                 </div>
               </div>
 
@@ -250,14 +394,15 @@ export default function RegisterDriverPage() {
                 />
                 I consent to identity and license verification checks as part of TrustDrive onboarding.
               </label>
-              {submitted && errors.consent && <p className="text-xs" style={{ color: palette.danger }}>{errors.consent}</p>}
+              {getError('consent') && <p className="text-xs" style={{ color: palette.danger }}>{getError('consent')}</p>}
 
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition hover:opacity-90"
+                disabled={loading}
+                className="inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 style={{ backgroundColor: palette.primary }}
               >
-                Create Driver Account
+                {loading ? 'Creating account...' : 'Create Driver Account'}
               </button>
             </form>
 

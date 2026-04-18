@@ -1,7 +1,18 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Select from 'react-select'
+import toast from 'react-hot-toast'
+import { Eye, EyeOff, AlertCircle, X } from 'lucide-react'
+import { registerVendor } from '@/services/authService'
+import { validateRegisterVendor } from '@/services/validationService'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const KENYA_CITIES = [
+  { value: 'Nairobi', label: 'Nairobi' },
+  { value: 'Mombasa', label: 'Mombasa' },
+  { value: 'Kisumu', label: 'Kisumu' },
+  { value: 'Nakuru', label: 'Nakuru' },
+  { value: 'Eldoret', label: 'Eldoret' },
+]
 
 const palette = {
   bg: 'var(--color-bg-main)',
@@ -19,41 +30,84 @@ export default function RegisterPlatformPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
     companyName: '',
-    platformName: '',
-    workEmail: '',
+    platformBrandName: '',
+    email: '',
     country: '',
-    activeFleet: '',
+    activeFleetMonthly: '',
+    phoneNumber: '',
+    operatingCity: '',
+    address: '',
     password: '',
     confirmPassword: '',
     termsAccepted: false,
   })
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [apiErrors, setApiErrors] = useState({})
+  const [authError, setAuthError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const errors = useMemo(() => {
-    const nextErrors = {}
-    if (!form.companyName.trim()) nextErrors.companyName = 'Company name is required.'
-    if (!form.platformName.trim()) nextErrors.platformName = 'Platform name is required.'
-    if (!EMAIL_REGEX.test(form.workEmail)) nextErrors.workEmail = 'Enter a valid work email.'
-    if (!form.country.trim()) nextErrors.country = 'Country is required.'
-    if (!form.activeFleet.trim()) nextErrors.activeFleet = 'Active fleet size is required.'
-    if (form.password.length < 10) nextErrors.password = 'Password must be at least 10 characters.'
-    if (form.confirmPassword !== form.password) nextErrors.confirmPassword = 'Passwords do not match.'
-    if (!form.termsAccepted) nextErrors.termsAccepted = 'You must accept Terms and Privacy Policy.'
-    return nextErrors
+    const v = validateRegisterVendor(form)
+    if (!form.termsAccepted) v.termsAccepted = 'You must accept Terms and Privacy Policy.'
+    return v
   }, [form])
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    if (apiErrors[name]) setApiErrors((prev) => ({ ...prev, [name]: undefined }))
   }
 
-  const handleSubmit = (event) => {
+  const handlePhoneChange = (event) => {
+    let digits = event.target.value.replace(/\D/g, '')
+    if (digits.length > 0 && digits[0] !== '0') digits = '0' + digits
+    if (digits.length > 10) digits = digits.slice(0, 10)
+    setForm((prev) => ({ ...prev, phoneNumber: digits }))
+    if (apiErrors.phoneNumber) setApiErrors((prev) => ({ ...prev, phoneNumber: undefined }))
+  }
+
+  const handleCityChange = (option) => {
+    setForm((prev) => ({ ...prev, operatingCity: option ? option.value : '' }))
+    if (apiErrors.operatingCity) setApiErrors((prev) => ({ ...prev, operatingCity: undefined }))
+  }
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitted(true)
+    setAuthError('')
+    setApiErrors({})
+
     if (Object.keys(errors).length > 0) return
-    localStorage.setItem('trustdrive-user-role', 'platform')
-    navigate('/home')
+
+    setLoading(true)
+    try {
+      const data = await registerVendor({
+        companyName: form.companyName,
+        platformBrandName: form.platformBrandName,
+        email: form.email,
+        country: form.country,
+        activeFleetMonthly: parseInt(form.activeFleetMonthly) || 0,
+        phoneNumber: form.phoneNumber,
+        operatingCity: form.operatingCity,
+        address: form.address,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      })
+      toast.success(data.message || 'Registration successful!')
+      navigate('/login')
+    } catch (error) {
+      if (error.errors) {
+        setApiErrors(error.errors)
+      }
+      setAuthError(error.message || 'Registration failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
+
+  const getError = (field) => (submitted && errors[field]) || apiErrors[field]
 
   return (
     <section className="px-4 py-10 sm:px-6 md:py-14 lg:px-8" style={{ backgroundColor: palette.bg }}>
@@ -121,6 +175,37 @@ export default function RegisterPlatformPage() {
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              {(authError || Object.keys(apiErrors).filter((k) => apiErrors[k]).length > 0) && (
+                <div
+                  className="relative rounded-xl border p-4"
+                  style={{ borderColor: palette.danger, backgroundColor: `${palette.danger}08` }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => { setAuthError(''); setApiErrors({}) }}
+                    className="absolute right-3 top-3 rounded-full p-0.5 transition hover:opacity-70"
+                    style={{ color: palette.danger }}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: palette.danger }} />
+                    <div className="space-y-1">
+                      {authError && (
+                        <p className="text-sm font-medium" style={{ color: palette.danger }}>{authError}</p>
+                      )}
+                      {Object.entries(apiErrors)
+                        .filter(([, v]) => v)
+                        .map(([field, msg]) => (
+                          <p key={field} className="text-xs" style={{ color: palette.danger }}>
+                            <span className="font-medium capitalize">{field.replace(/([A-Z])/g, ' $1').trim()}</span>: {msg}
+                          </p>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-4 grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Company legal name</label>
@@ -131,42 +216,67 @@ export default function RegisterPlatformPage() {
                     className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                     style={{
                       backgroundColor: palette.card,
-                      borderColor: submitted && errors.companyName ? palette.danger : palette.border,
+                      borderColor: getError('companyName') ? palette.danger : palette.border,
                       color: palette.text,
                     }}
                   />
-                  {submitted && errors.companyName && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.companyName}</p>}
+                  {getError('companyName') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('companyName')}</p>}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Platform brand name</label>
                   <input
-                    name="platformName"
-                    value={form.platformName}
+                    name="platformBrandName"
+                    value={form.platformBrandName}
                     onChange={handleChange}
                     className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                     style={{
                       backgroundColor: palette.card,
-                      borderColor: submitted && errors.platformName ? palette.danger : palette.border,
+                      borderColor: getError('platformBrandName') ? palette.danger : palette.border,
                       color: palette.text,
                     }}
                   />
-                  {submitted && errors.platformName && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.platformName}</p>}
+                  {getError('platformBrandName') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('platformBrandName')}</p>}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Work email</label>
                   <input
                     type="email"
-                    name="workEmail"
-                    value={form.workEmail}
+                    name="email"
+                    value={form.email}
                     onChange={handleChange}
                     className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                     style={{
                       backgroundColor: palette.card,
-                      borderColor: submitted && errors.workEmail ? palette.danger : palette.border,
+                      borderColor: getError('email') ? palette.danger : palette.border,
                       color: palette.text,
                     }}
                   />
-                  {submitted && errors.workEmail && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.workEmail}</p>}
+                  {getError('email') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('email')}</p>}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Phone</label>
+                  <div className="relative">
+                    <input
+                      name="phoneNumber"
+                      value={form.phoneNumber}
+                      onChange={handlePhoneChange}
+                      placeholder="0712345678"
+                      maxLength={10}
+                      className="w-full rounded-xl border px-4 py-3 pr-14 text-sm outline-none transition focus:ring-2"
+                      style={{
+                        backgroundColor: palette.card,
+                        borderColor: getError('phoneNumber') ? palette.danger : palette.border,
+                        color: palette.text,
+                      }}
+                    />
+                    <span
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium tabular-nums"
+                      style={{ color: form.phoneNumber.length === 10 ? palette.success : palette.textSecondary }}
+                    >
+                      {form.phoneNumber.length}/10
+                    </span>
+                  </div>
+                  {getError('phoneNumber') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('phoneNumber')}</p>}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Country / region</label>
@@ -177,63 +287,135 @@ export default function RegisterPlatformPage() {
                     className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                     style={{
                       backgroundColor: palette.card,
-                      borderColor: submitted && errors.country ? palette.danger : palette.border,
+                      borderColor: getError('country') ? palette.danger : palette.border,
                       color: palette.text,
                     }}
                   />
-                  {submitted && errors.country && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.country}</p>}
+                  {getError('country') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('country')}</p>}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Operating city</label>
+                  <Select
+                    options={KENYA_CITIES}
+                    value={KENYA_CITIES.find((c) => c.value === form.operatingCity) || null}
+                    onChange={handleCityChange}
+                    placeholder="Select a city..."
+                    isClearable
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        backgroundColor: palette.card,
+                        borderColor: getError('operatingCity') ? palette.danger : palette.border,
+                        borderRadius: '0.75rem',
+                        padding: '0.25rem 0.25rem',
+                        fontSize: '0.875rem',
+                        boxShadow: state.isFocused ? `0 0 0 2px ${palette.primary}40` : 'none',
+                        '&:hover': { borderColor: palette.primary },
+                      }),
+                      singleValue: (base) => ({ ...base, color: palette.text }),
+                      menu: (base) => ({ ...base, backgroundColor: palette.card, borderRadius: '0.75rem', border: `1px solid ${palette.border}` }),
+                      option: (base, state) => ({
+                        ...base,
+                        backgroundColor: state.isSelected ? palette.primary : state.isFocused ? `${palette.primary}15` : 'transparent',
+                        color: state.isSelected ? '#fff' : palette.text,
+                        fontSize: '0.875rem',
+                      }),
+                      placeholder: (base) => ({ ...base, color: palette.textSecondary }),
+                      input: (base) => ({ ...base, color: palette.text }),
+                    }}
+                  />
+                  {getError('operatingCity') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('operatingCity')}</p>}
                 </div>
               </div>
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Active fleet or rentals per month</label>
                 <input
-                  name="activeFleet"
-                  value={form.activeFleet}
+                  name="activeFleetMonthly"
+                  type="number"
+                  value={form.activeFleetMonthly}
                   onChange={handleChange}
-                  placeholder="e.g. 350 active rentals / month"
+                  placeholder="e.g. 350"
                   className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
                   style={{
                     backgroundColor: palette.card,
-                    borderColor: submitted && errors.activeFleet ? palette.danger : palette.border,
+                    borderColor: getError('activeFleetMonthly') ? palette.danger : palette.border,
                     color: palette.text,
                   }}
                 />
-                {submitted && errors.activeFleet && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.activeFleet}</p>}
+                {getError('activeFleetMonthly') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('activeFleetMonthly')}</p>}
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Address</label>
+                <input
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
+                  style={{
+                    backgroundColor: palette.card,
+                    borderColor: getError('address') ? palette.danger : palette.border,
+                    color: palette.text,
+                  }}
+                />
+                {getError('address') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('address')}</p>}
               </div>
 
               <div className="grid gap-4 grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
-                    style={{
-                      backgroundColor: palette.card,
-                      borderColor: submitted && errors.password ? palette.danger : palette.border,
-                      color: palette.text,
-                    }}
-                  />
-                  {submitted && errors.password && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.password}</p>}
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border px-4 py-3 pr-10 text-sm outline-none transition focus:ring-2"
+                      style={{
+                        backgroundColor: palette.card,
+                        borderColor: getError('password') ? palette.danger : palette.border,
+                        color: palette.text,
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5"
+                      style={{ color: palette.textSecondary }}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {getError('password') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('password')}</p>}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium" style={{ color: palette.text }}>Confirm password</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={form.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
-                    style={{
-                      backgroundColor: palette.card,
-                      borderColor: submitted && errors.confirmPassword ? palette.danger : palette.border,
-                      color: palette.text,
-                    }}
-                  />
-                  {submitted && errors.confirmPassword && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{errors.confirmPassword}</p>}
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={form.confirmPassword}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border px-4 py-3 pr-10 text-sm outline-none transition focus:ring-2"
+                      style={{
+                        backgroundColor: palette.card,
+                        borderColor: getError('confirmPassword') ? palette.danger : palette.border,
+                        color: palette.text,
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5"
+                      style={{ color: palette.textSecondary }}
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {getError('confirmPassword') && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{getError('confirmPassword')}</p>}
                 </div>
               </div>
 
@@ -248,14 +430,15 @@ export default function RegisterPlatformPage() {
                 />
                 I agree to TrustDrive Terms and Privacy Policy for platform integrations.
               </label>
-              {submitted && errors.termsAccepted && <p className="text-xs" style={{ color: palette.danger }}>{errors.termsAccepted}</p>}
+              {getError('termsAccepted') && <p className="text-xs" style={{ color: palette.danger }}>{getError('termsAccepted')}</p>}
 
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition hover:opacity-90"
+                disabled={loading}
+                className="inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 style={{ backgroundColor: palette.primary }}
               >
-                Create Platform Account
+                {loading ? 'Creating account...' : 'Create Platform Account'}
               </button>
             </form>
 
