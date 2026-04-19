@@ -1,5 +1,5 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const PHONE_REGEX = /^\+?[0-9]{10,15}$/
+const PHONE_REGEX = /^0\d{9}$/
 const URL_REGEX = /^https?:\/\/.+\..+/
 
 export function validateVehicleOwnerStep1(ownerType, personalInfo, companyInfo) {
@@ -12,7 +12,7 @@ export function validateVehicleOwnerStep1(ownerType, personalInfo, companyInfo) 
     if (!personalInfo.phone?.trim()) {
       errors.phone = 'Phone number is required.'
     } else if (!PHONE_REGEX.test(personalInfo.phone)) {
-      errors.phone = 'Enter a valid phone number (e.g., +2547XXXXXXXX).'
+      errors.phone = 'Phone must be 10 digits starting with 0 (e.g., 0712345678).'
     }
 
     if (!personalInfo.email?.trim()) {
@@ -25,8 +25,13 @@ export function validateVehicleOwnerStep1(ownerType, personalInfo, companyInfo) 
     else if (personalInfo.nationalId.trim().length < 5) errors.nationalId = 'National ID must be at least 5 characters.'
 
     if (personalInfo.alternativePhone?.trim() && !PHONE_REGEX.test(personalInfo.alternativePhone)) {
-      errors.alternativePhone = 'Enter a valid phone number.'
+      errors.alternativePhone = 'Phone must be 10 digits starting with 0.'
     }
+
+    // Residential address
+    if (!personalInfo.address?.trim()) errors.address = 'Street address is required.'
+    if (!personalInfo.city?.trim()) errors.city = 'City is required.'
+    if (!personalInfo.postalCode?.trim()) errors.postalCode = 'Postal code is required.'
   } else {
     if (!companyInfo.companyName?.trim()) errors.companyName = 'Company name is required.'
     else if (companyInfo.companyName.trim().length < 2) errors.companyName = 'Company name must be at least 2 characters.'

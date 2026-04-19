@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import api from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import { 
   Users, ArrowLeft, Plus, Check, ChevronRight, ChevronLeft, 
   Shield, FileText, Building, CreditCard, User, Phone, Mail,
-  MapPin, Briefcase, Upload, Award, Clock, Star, AlertCircle
+  MapPin, Briefcase, Upload, Award, Clock, Star, AlertCircle, CalendarDays
 } from 'lucide-react';
 import {
   validateVehicleOwnerStep1,
@@ -61,6 +64,64 @@ function FormInput({ label, required, error, icon: Icon, type = "text", ...props
   );
 }
 
+function FormDatePicker({ label, required, error, value, onChange, maxDate }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const dateValue = value ? new Date(value) : null;
+  const displayValue = dateValue
+    ? dateValue.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    : '';
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="mb-1 block text-xs font-semibold" style={{ color: palette.textSecondary }}>
+        {label} {required && <span style={{ color: palette.danger }}>*</span>}
+      </label>
+      <div
+        className="flex w-full cursor-pointer items-center rounded-lg border px-3 py-2.5 text-sm transition"
+        style={{
+          backgroundColor: palette.bg,
+          borderColor: error ? palette.danger : palette.border,
+          color: displayValue ? palette.text : palette.textSecondary,
+        }}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <CalendarDays size={16} className="mr-2 shrink-0" style={{ color: palette.textSecondary }} />
+        {displayValue || 'Select date'}
+      </div>
+      {open && (
+        <div
+          className="absolute z-50 mt-1 rounded-lg border shadow-lg"
+          style={{ backgroundColor: palette.card, borderColor: palette.border }}
+        >
+          <Calendar
+            value={dateValue}
+            onChange={(date) => {
+              const yyyy = date.getFullYear();
+              const mm = String(date.getMonth() + 1).padStart(2, '0');
+              const dd = String(date.getDate()).padStart(2, '0');
+              onChange(`${yyyy}-${mm}-${dd}`);
+              setOpen(false);
+            }}
+            maxDate={maxDate || new Date()}
+            className="!border-0 !bg-transparent"
+          />
+        </div>
+      )}
+      {error && <p className="mt-1 text-xs" style={{ color: palette.danger }}>{error}</p>}
+    </div>
+  );
+}
+
 function FormSelect({ label, required, error, icon: Icon, children, ...props }) {
   return (
     <div>
@@ -113,30 +174,74 @@ function FormTextArea({ label, required, error, rows = 3, ...props }) {
   );
 }
 
+import { X, FileText as FileIcon, Eye } from 'lucide-react';
+
 function FileUpload({ label, onFileChange, accept = "image/*", multiple = false }) {
   const [previews, setPreviews] = useState([]);
+  const [modal, setModal] = useState({ open: false, src: null });
 
   const handleChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length) {
-      const newPreviews = files.map(file => URL.createObjectURL(file));
+      const newPreviews = files.map(file => ({
+        url: URL.createObjectURL(file),
+        file,
+        type: file.type
+      }));
       setPreviews(newPreviews);
       onFileChange(multiple ? files : files[0]);
     }
   };
 
+  const handleRemove = (idx) => {
+    setPreviews([]);
+    onFileChange(multiple ? [] : null);
+  };
+
+  const openModal = (src) => setModal({ open: true, src });
+  const closeModal = () => setModal({ open: false, src: null });
+
   return (
     <div>
       <label className="mb-1 block text-xs font-semibold" style={{ color: palette.textSecondary }}>{label}</label>
       <div
-        className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition hover:opacity-80"
+        className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition hover:opacity-80 relative"
         style={{ borderColor: palette.border, backgroundColor: palette.bg }}
         onClick={() => document.getElementById(`upload-${label.replace(/\s/g, '')}`).click()}
       >
         {previews.length > 0 ? (
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-col items-center gap-2 w-full">
             {previews.map((preview, idx) => (
-              <img key={idx} src={preview} alt={`Preview ${idx + 1}`} className="h-16 w-16 rounded-lg object-cover" />
+              <div key={idx} className="flex flex-col items-center gap-2 w-full">
+                {preview.type.startsWith('image') ? (
+                  <>
+                    <img
+                      src={preview.url}
+                      alt="Preview"
+                      className="h-32 w-auto max-w-xs rounded-lg object-contain border"
+                      style={{ borderColor: palette.border, cursor: 'pointer' }}
+                      onClick={e => { e.stopPropagation(); openModal(preview.url); }}
+                    />
+                  </>
+                ) : preview.type === 'application/pdf' ? (
+                  <a
+                    href={preview.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-blue-700 underline"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <FileIcon size={28} />
+                    <span>Preview PDF</span>
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <FileIcon size={28} />
+                    <span>Unknown file</span>
+                  </div>
+                )}
+                {/* filename, size, remove button could go here */}
+              </div>
             ))}
           </div>
         ) : (
@@ -155,6 +260,24 @@ function FileUpload({ label, onFileChange, accept = "image/*", multiple = false 
           onChange={handleChange}
         />
       </div>
+      {/* Modal for image preview */}
+      {modal.open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+          onClick={closeModal}
+        >
+          <div className="relative bg-white rounded-lg shadow-lg p-4" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+            <button
+              className="absolute top-2 right-2 p-1 rounded hover:bg-red-100"
+              style={{ color: palette.danger }}
+              onClick={closeModal}
+            >
+              <X size={20} />
+            </button>
+            <img src={modal.src} alt="Full Preview" className="max-w-full max-h-[70vh] rounded" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -256,6 +379,11 @@ export default function AddVehicleOwner() {
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
+  const handlePhoneInput = (field, value) => {
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+    handlePersonalChange(field, digitsOnly);
+  };
+
   const handleCompanyChange = (field, value) => {
     setCompanyInfo(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
@@ -300,9 +428,12 @@ export default function AddVehicleOwner() {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
+  const [submitStatus, setSubmitStatus] = useState({ loading: false, error: '', success: '' });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setSubmitStatus({ loading: false, error: '', success: '' });
+
     if (!validateStep1() || !validateStep2() || !validateStep3()) {
       setCurrentStep(1);
       return;
@@ -310,31 +441,24 @@ export default function AddVehicleOwner() {
 
     const payload = {
       ownerType,
-      owner: ownerType === 'individual'
-        ? { ...personalInfo, ...businessDetails }
-        : { ...companyInfo, ...businessDetails },
-      ownerRaw: ownerType === 'individual' ? personalInfo : companyInfo,
-      verification_documents: {
-        proof_of_identity: verificationDetails.proofOfIdentity,
-        proof_of_address: verificationDetails.proofOfAddress,
-        business_registration: verificationDetails.businessRegistrationDoc,
-        insurance_certificate: verificationDetails.insuranceCertificate,
-      },
-      subscription: subscription,
-      consents: {
-        terms_accepted: verificationDetails.termsAccepted,
-        data_processing: verificationDetails.dataProcessingConsent,
-        marketing: verificationDetails.marketingConsent,
-      },
-      registered_at: new Date().toISOString(),
+      ...(
+        ownerType === 'individual'
+          ? personalInfo
+          : companyInfo
+      ),
+      ...businessDetails,
+      ...subscription,
+      ...verificationDetails,
     };
 
-    console.log('Submitting owner registration:', payload);
-    
-    // TODO: Wire to actual API
-    // const response = await api.post('/owners/register', payload);
-    
-    navigate('/vehicle-owners');
+    setSubmitStatus({ loading: true, error: '', success: '' });
+    try {
+      await api.post('/vehicleowners/register', payload);
+      setSubmitStatus({ loading: false, error: '', success: 'Vehicle owner registered successfully!' });
+      setTimeout(() => navigate('/vehicle-owners'), 1200);
+    } catch (err) {
+      setSubmitStatus({ loading: false, error: err?.message || 'Failed to register vehicle owner.', success: '' });
+    }
   };
 
   const renderStepIndicator = () => (
@@ -426,65 +550,57 @@ export default function AddVehicleOwner() {
             />
             <FormInput
               label="Year Established"
-              type="number"
-              placeholder="e.g. 2018"
+              required
+              placeholder="e.g. 2010"
               value={companyInfo.yearEstablished}
               onChange={(e) => handleCompanyChange('yearEstablished', e.target.value)}
-              icon={Clock}
+              icon={CalendarDays}
             />
-          </div>
-
-          <hr className="my-4" style={{ borderColor: palette.border }} />
-
-          <div>
-            <h4 className="mb-3 text-sm font-semibold flex items-center gap-2" style={{ color: palette.text }}>
-              <User size={16} style={{ color: palette.primary }} /> Primary Contact Person
-            </h4>
-            <div className="grid gap-4 md:grid-cols-2">
-              <FormInput
-                label="Contact Person Full Name"
-                required
-                placeholder="e.g. Jane Kamau"
-                value={companyInfo.contactPersonName}
-                onChange={(e) => handleCompanyChange('contactPersonName', e.target.value)}
-                error={errors.contactPersonName}
-                icon={User}
-              />
-              <FormInput
-                label="Role / Title"
-                placeholder="e.g. Fleet Manager"
-                value={companyInfo.contactPersonRole}
-                onChange={(e) => handleCompanyChange('contactPersonRole', e.target.value)}
-                icon={Briefcase}
-              />
-              <FormInput
-                label="Contact Phone"
-                required
-                type="tel"
-                placeholder="+2547XXXXXXXX"
-                value={companyInfo.contactPersonPhone}
-                onChange={(e) => handleCompanyChange('contactPersonPhone', e.target.value)}
-                error={errors.contactPersonPhone}
-                icon={Phone}
-              />
-              <FormInput
-                label="Contact Email"
-                required
-                type="email"
-                placeholder="jane@company.com"
-                value={companyInfo.contactPersonEmail}
-                onChange={(e) => handleCompanyChange('contactPersonEmail', e.target.value)}
-                error={errors.contactPersonEmail}
-                icon={Mail}
-              />
-              <FormInput
-                label="Number of Directors"
-                type="number"
-                placeholder="e.g. 3"
-                value={companyInfo.numberOfDirectors}
-                onChange={(e) => handleCompanyChange('numberOfDirectors', e.target.value)}
-              />
-            </div>
+            <FormInput
+              label="Contact Person Name"
+              required
+              placeholder="e.g. Jane Doe"
+              value={companyInfo.contactPersonName}
+              onChange={(e) => handleCompanyChange('contactPersonName', e.target.value)}
+              error={errors.contactPersonName}
+              icon={User}
+            />
+            <FormInput
+              label="Contact Person Role"
+              required
+              placeholder="e.g. Director"
+              value={companyInfo.contactPersonRole}
+              onChange={(e) => handleCompanyChange('contactPersonRole', e.target.value)}
+              error={errors.contactPersonRole}
+              icon={User}
+            />
+            <FormInput
+              label="Contact Phone"
+              required
+              type="tel"
+              placeholder="+2547XXXXXXXX"
+              value={companyInfo.contactPersonPhone}
+              onChange={(e) => handleCompanyChange('contactPersonPhone', e.target.value)}
+              error={errors.contactPersonPhone}
+              icon={Phone}
+            />
+            <FormInput
+              label="Contact Email"
+              required
+              type="email"
+              placeholder="jane@company.com"
+              value={companyInfo.contactPersonEmail}
+              onChange={(e) => handleCompanyChange('contactPersonEmail', e.target.value)}
+              error={errors.contactPersonEmail}
+              icon={Mail}
+            />
+            <FormInput
+              label="Number of Directors"
+              type="number"
+              placeholder="e.g. 3"
+              value={companyInfo.numberOfDirectors}
+              onChange={(e) => handleCompanyChange('numberOfDirectors', e.target.value)}
+            />
           </div>
 
           <hr className="my-4" style={{ borderColor: palette.border }} />
@@ -542,16 +658,21 @@ export default function AddVehicleOwner() {
             error={errors.fullName}
             icon={User}
           />
-          <FormInput
-            label="Phone Number"
-            required
-            type="tel"
-            placeholder="+2547XXXXXXXX"
-            value={personalInfo.phone}
-            onChange={(e) => handlePersonalChange('phone', e.target.value)}
-            error={errors.phone}
-            icon={Phone}
-          />
+          <div>
+            <FormInput
+              label="Phone Number"
+              required
+              type="tel"
+              placeholder="0712345678"
+              value={personalInfo.phone}
+              onChange={(e) => handlePhoneInput('phone', e.target.value)}
+              error={errors.phone}
+              icon={Phone}
+            />
+            <p className="mt-1 text-xs" style={{ color: personalInfo.phone.length === 10 ? palette.success : palette.textSecondary }}>
+              {10 - personalInfo.phone.length} digit{10 - personalInfo.phone.length !== 1 ? 's' : ''} remaining
+            </p>
+          </div>
           <FormInput
             label="Email Address"
             required
@@ -571,19 +692,25 @@ export default function AddVehicleOwner() {
             error={errors.nationalId}
             icon={Shield}
           />
-          <FormInput
-            label="Alternative Phone Number"
-            type="tel"
-            placeholder="+2547XXXXXXXX"
-            value={personalInfo.alternativePhone}
-            onChange={(e) => handlePersonalChange('alternativePhone', e.target.value)}
-            icon={Phone}
-          />
-          <FormInput
+          <div>
+            <FormInput
+              label="Alternative Phone Number"
+              type="tel"
+              placeholder="0712345678"
+              value={personalInfo.alternativePhone}
+              onChange={(e) => handlePhoneInput('alternativePhone', e.target.value)}
+              error={errors.alternativePhone}
+              icon={Phone}
+            />
+            <p className="mt-1 text-xs" style={{ color: personalInfo.alternativePhone.length === 10 ? palette.success : palette.textSecondary }}>
+              {10 - personalInfo.alternativePhone.length} digit{10 - personalInfo.alternativePhone.length !== 1 ? 's' : ''} remaining
+            </p>
+          </div>
+          <FormDatePicker
             label="Date of Birth"
-            type="date"
             value={personalInfo.dateOfBirth}
-            onChange={(e) => handlePersonalChange('dateOfBirth', e.target.value)}
+            onChange={(val) => handlePersonalChange('dateOfBirth', val)}
+            maxDate={new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate())}
           />
         </div>
 
@@ -594,22 +721,28 @@ export default function AddVehicleOwner() {
           <div className="grid gap-4 md:grid-cols-2">
             <FormInput
               label="Street Address"
+              required
               placeholder="e.g. 123 Main Street"
               value={personalInfo.address}
               onChange={(e) => handlePersonalChange('address', e.target.value)}
+              error={errors.address}
               icon={MapPin}
             />
             <FormInput
               label="City"
+              required
               placeholder="e.g. Nairobi"
               value={personalInfo.city}
               onChange={(e) => handlePersonalChange('city', e.target.value)}
+              error={errors.city}
             />
             <FormInput
               label="Postal Code"
+              required
               placeholder="e.g. 00100"
               value={personalInfo.postalCode}
               onChange={(e) => handlePersonalChange('postalCode', e.target.value)}
+              error={errors.postalCode}
             />
           </div>
         </div>
